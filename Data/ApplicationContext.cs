@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using TrimaniaBackend.Models;
 
@@ -7,7 +8,7 @@ namespace TrimaniaBackend.Data
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL("server=localhost; database=trimaniadb;user=trilogo;password=1234");
+            optionsBuilder.UseMySQL(Environment.GetEnvironmentVariable("DB_CString"));
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Address> Addresses { get; set; }

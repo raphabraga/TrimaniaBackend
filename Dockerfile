@@ -3,6 +3,6 @@ WORKDIR /TrimaniaBackend
 COPY *.csproj ./
 RUN dotnet restore
 COPY . ./
-EXPOSE 5001
+EXPOSE 5044 
 RUN dotnet dev-certs https --clean && dotnet dev-certs https -t
 CMD ["dotnet", "run"]
