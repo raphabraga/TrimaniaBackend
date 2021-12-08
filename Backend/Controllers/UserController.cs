@@ -1,35 +1,32 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
+using System.Collections.Generic;
 
 namespace Backend.Controllers
 {
-    public class UserController : ControllerBase
+    [ApiController]
+    [Route("users")]
+    public class UsersController : ControllerBase
     {
-        [ApiController]
-        [Route("users")]
-        public class UsersController : ControllerBase
+        private readonly UserService _userService;
+        public UsersController(UserService service)
         {
-            private readonly UserService _userService;
-            public UsersController(UserService service)
-            {
-                _userService = service;
-            }
+            _userService = service;
+        }
 
-            [HttpGet]
-            public List<User> Get()
-            {
-                return _userService.GetUsers();
-            }
+        [HttpGet]
+        public List<User> Get()
+        {
+            return _userService.GetUsers();
+        }
 
-            [HttpPost]
+        [HttpPost]
 
-            public User Create([FromBody] User user)
-            {
-                _userService.CreateUser(user);
-                return user;
-            }
+        public User Create([FromBody] User user)
+        {
+            _userService.CreateUser(user);
+            return user;
         }
     }
 }
