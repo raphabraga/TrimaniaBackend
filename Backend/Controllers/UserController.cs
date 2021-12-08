@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using TrimaniaBackend.Models;
-using TrimaniaBackend.Services;
+using Backend.Models;
+using Backend.Services;
 
-namespace TrimaniaBackend.Controllers
+namespace Backend.Controllers
 {
     public class UserController : ControllerBase
     {

@@ -1,0 +1,28 @@
+---
+version: "3.8"
+
+services:
+  # Database
+  db:
+    image: mysql/mysql-server:5.7
+    platform: linux/x86_64
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: trimaniadb
+      MYSQL_USER: trilogo
+      MYSQL_PASSWORD: 1234
+  # Backend
+  backend:
+    build: ./Backend/
+    environment:
+      DB_CString: server=db; port=3306; database=trimaniadb;user=trilogo;password=1234
+    ports:
+      - 5000:5044
+      - 5001:7064
+volumes:
+  db-data:

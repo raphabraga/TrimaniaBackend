@@ -1,10 +1,10 @@
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using TrimaniaBackend.Data;
-using TrimaniaBackend.Models;
+using Backend.Data;
+using Backend.Models;
 
-namespace TrimaniaBackend.Services
+namespace Backend.Services
 {
     public class UserService
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace TrimaniaBackend.Models
+namespace Backend.Models
 {
     public class User
     {

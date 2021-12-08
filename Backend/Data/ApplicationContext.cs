@@ -1,8 +1,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using TrimaniaBackend.Models;
+using Backend.Models;
 
-namespace TrimaniaBackend.Data
+namespace Backend.Data
 {
     public class ApplicationContext : DbContext
     {
