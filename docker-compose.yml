@@ -4,8 +4,8 @@ version: "3.8"
 services:
   # Database
   db:
-    image: mysql/mysql-server:5.7
-    platform: linux/x86_64
+    image: ubuntu/mysql
+
     ports:
       - 3306:3306
     volumes:
@@ -20,9 +20,9 @@ services:
   backend:
     build: ./Backend/
     environment:
-      DB_CString: server=db; port=3306; database=trimaniadb;user=trilogo;password=1234
+      DB_CString: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
     ports:
-      - 5000:5044
-      - 5001:7064
+      - 5001:5044
+      - 5002:5045
 volumes:
   db-data:
