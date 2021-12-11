@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("users")]
     public class UsersController : ControllerBase
@@ -22,7 +24,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-
+        [AllowAnonymous]
         public User Create([FromBody] User user)
         {
             _userService.CreateUser(user);

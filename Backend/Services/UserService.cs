@@ -21,11 +21,24 @@ namespace Backend.Services
             return _applicationContext.Users.Include(user => user.Address).ToList();
         }
 
+        public User GetUser(string login)
+        {
+            return _applicationContext.Users.FirstOrDefault(User => User.Login == login);
+        }
+
         public User CreateUser(User user)
         {
             _applicationContext.Users.Add(user);
             _applicationContext.SaveChanges();
             return user;
+        }
+
+        public bool CheckPassword(string login, string pwd)
+        {
+            User user = GetUser(login);
+            if (user == null)
+                return false;
+            return user.Password == pwd;
         }
     }
 }
