@@ -23,6 +23,12 @@ namespace Backend.Controllers
             return _userService.GetUsers();
         }
 
+        [HttpGet("{id}")]
+        public List<User> Get(int id)
+        {
+            return _userService.GetUsers(id);
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public User Create([FromBody] User user)
@@ -30,5 +36,6 @@ namespace Backend.Controllers
             _userService.CreateUser(user);
             return user;
         }
+
     }
 }

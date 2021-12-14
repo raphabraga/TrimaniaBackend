@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +17,18 @@ namespace Backend.Services
             _applicationContext.Database.EnsureCreated();
         }
 
-        public List<User> GetUsers()
+        public List<User> GetUsers(params object[] obj)
         {
-            return _applicationContext.Users.Include(user => user.Address).ToList();
+            if (obj.Length < 1)
+                return _applicationContext.Users.Include(user => user.Address).ToList();
+            else
+            {
+                User user = _applicationContext.Users.FirstOrDefault(user => user.Id == (int)obj[0]);
+                return new List<User>() { user };
+            }
         }
 
-        public User GetUser(string login)
+        public User GetUserByLogin(string login)
         {
             return _applicationContext.Users.FirstOrDefault(User => User.Login == login);
         }
@@ -35,7 +42,7 @@ namespace Backend.Services
 
         public bool CheckPassword(string login, string pwd)
         {
-            User user = GetUser(login);
+            User user = GetUserByLogin(login);
             if (user == null)
                 return false;
             return user.Password == pwd;

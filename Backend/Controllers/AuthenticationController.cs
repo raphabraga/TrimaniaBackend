@@ -21,7 +21,7 @@ namespace Backend.Controllers
         {
             if (!_userService.CheckPassword(authUser.Login, authUser.Password))
                 return BadRequest("Invalid login or password");
-            User user = _userService.GetUser(authUser.Login);
+            User user = _userService.GetUserByLogin(authUser.Login);
             string token = TokenService.GenerateToken(user);
             return Ok(token);
         }
