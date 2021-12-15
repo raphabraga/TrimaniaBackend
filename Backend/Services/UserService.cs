@@ -22,15 +22,9 @@ namespace Backend.Services
             _applicationContext.Database.EnsureCreated();
         }
 
-        public List<User> GetUsers(params object[] obj)
+        public User GetUserById(int id)
         {
-            if (obj.Length < 1)
-                return _applicationContext.Users.Include(user => user.Address).ToList();
-            else
-            {
-                User user = _applicationContext.Users.FirstOrDefault(user => user.Id == (int)obj[0]);
-                return new List<User>() { user };
-            }
+            return _applicationContext.Users.FirstOrDefault(user => user.Id == id);
         }
 
         public User GetUserByLogin(string login)
@@ -40,7 +34,7 @@ namespace Backend.Services
 
         public List<User> Query(string query, string sort, int? queryPage)
         {
-            int perPage = 3;
+            int perPage = 10;
             List<User> users;
             if (!string.IsNullOrEmpty(query))
                 users = _applicationContext.Users.Include(user => user.Address).Where(user => user.Login.Contains(query) ||
@@ -71,5 +65,7 @@ namespace Backend.Services
                 return false;
             return StringCipher.DecryptString(user.Password, _applicationAes.Key, _applicationAes.IV) == pwd;
         }
+
+        public User UpdateUser(int id)
     }
 }

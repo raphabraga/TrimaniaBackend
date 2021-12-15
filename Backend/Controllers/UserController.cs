@@ -26,9 +26,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public List<User> Get(int id)
+        public User Get(int id)
         {
-            return _userService.GetUsers(id);
+            return _userService.GetUserById(id);
         }
 
         [HttpPost]
