@@ -1,18 +1,23 @@
+using System.Net.WebSockets;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using System.Security.Cryptography;
+using Backend.Utils;
 
 namespace Backend.Services
 {
     public class UserService
     {
         private readonly ApplicationContext _applicationContext;
+        private readonly Aes _applicationAes;
 
-        public UserService(ApplicationContext context)
+        public UserService(ApplicationContext context, Aes aes)
         {
+            _applicationAes = aes;
             _applicationContext = context;
             _applicationContext.Database.EnsureCreated();
         }
@@ -35,6 +40,7 @@ namespace Backend.Services
 
         public User CreateUser(User user)
         {
+            user.Password = StringCipher.EncryptString(user.Password, _applicationAes.Key, _applicationAes.IV);
             _applicationContext.Users.Add(user);
             _applicationContext.SaveChanges();
             return user;
@@ -45,7 +51,7 @@ namespace Backend.Services
             User user = GetUserByLogin(login);
             if (user == null)
                 return false;
-            return user.Password == pwd;
+            return StringCipher.DecryptString(user.Password, _applicationAes.Key, _applicationAes.IV) == pwd;
         }
     }
 }

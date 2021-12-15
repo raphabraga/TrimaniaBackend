@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,10 +38,10 @@ options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 new MySqlServerVersion(new Version(8, 0, 27))));
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ApplicationContext>();
+builder.Services.AddSingleton(_ => Aes.Create());
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-System.Console.WriteLine(builder.Configuration.GetSection("DB_CString").Value);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
