@@ -18,9 +18,11 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public List<User> Get()
+        [AllowAnonymous]
+        public List<User> Get([FromQuery(Name = "query")] string query,
+        [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int page)
         {
-            return _userService.GetUsers();
+            return _userService.Query(query, sort, page);
         }
 
         [HttpGet("{id}")]

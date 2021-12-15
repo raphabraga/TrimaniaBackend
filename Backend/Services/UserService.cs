@@ -35,7 +35,25 @@ namespace Backend.Services
 
         public User GetUserByLogin(string login)
         {
-            return _applicationContext.Users.FirstOrDefault(User => User.Login == login);
+            return _applicationContext.Users.FirstOrDefault(user => user.Login == login);
+        }
+
+        public List<User> Query(string query, string sort, int? queryPage)
+        {
+            int perPage = 3;
+            List<User> users;
+            if (!string.IsNullOrEmpty(query))
+                users = _applicationContext.Users.Include(user => user.Address).Where(user => user.Login.Contains(query) ||
+            user.Name.Contains(query) || user.Email.Contains(query)).ToList();
+            else
+                users = _applicationContext.Users.Include(user => user.Address).ToList();
+            if (sort == "asc")
+                users = users.OrderBy(user => user.Name).ToList();
+            else if (sort == "desc")
+                users = users.OrderByDescending(user => user.Name).ToList();
+            int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
+            users = users.Skip(perPage * (page - 1)).Take(perPage).ToList();
+            return users;
         }
 
         public User CreateUser(User user)
