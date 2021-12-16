@@ -1,6 +1,6 @@
 namespace Backend.Models
 {
-    enum OrderStatus
+    public enum OrderStatus
     {
         OPEN,
         IN_PROGRESS,
