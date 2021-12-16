@@ -1,12 +1,10 @@
-using System.Net.WebSockets;
-using System;
+using BC = BCrypt.Net.BCrypt;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 using System.Security.Cryptography;
-using Backend.Utils;
 
 namespace Backend.Services
 {
@@ -51,7 +49,8 @@ namespace Backend.Services
 
         public User CreateUser(User user)
         {
-            user.Password = StringCipher.EncryptString(user.Password, _applicationAes.Key, _applicationAes.IV);
+            System.Console.WriteLine(BC.HashPassword("123456"));
+            user.Password = BC.HashPassword(user.Password);
             _applicationContext.Users.Add(user);
             _applicationContext.SaveChanges();
             return user;
@@ -62,7 +61,7 @@ namespace Backend.Services
             User user = GetUserByLogin(login);
             if (user == null)
                 return false;
-            return StringCipher.DecryptString(user.Password, _applicationAes.Key, _applicationAes.IV) == pwd;
+            return BC.Verify(pwd, user.Password);
         }
 
         public bool DeleteUser(int id)
@@ -89,8 +88,7 @@ namespace Backend.Services
                 user.Name = userUpdate.Name;
                 user.Cpf = userUpdate.Cpf;
                 user.Email = userUpdate.Email;
-                user.Password = StringCipher.EncryptString(userUpdate.Password,
-                _applicationAes.Key, _applicationAes.IV);
+                user.Password = BC.HashPassword(userUpdate.Password);
                 user.Birthday = userUpdate.Birthday;
                 user.Address.State = userUpdate.Address.State;
                 user.Address.City = userUpdate.Address.City;

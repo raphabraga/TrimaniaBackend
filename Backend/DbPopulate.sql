@@ -99,32 +99,46 @@ CREATE FUNCTION lipsum(p_max_words SMALLINT
 END;
 //
 DELIMITER ;
-
+INSERT INTO Addresses
+        SET Number = '1305',
+        Street = 'Av. Min. Gentil Barreira',
+        Neighborhood = 'Sapiranga',
+        City = 'Fortaleza',
+        State = 'Ceará';
+    INSERT INTO Users
+        SET Name = 'Administrator',
+        Login = 'admin',
+        Password = "$2a$11$XV.wYx0hB8gzU7c5l950muJJii9I37QIsCjlsnbwUZw9/TWeCs/EW",
+        Cpf = '24.374.575/0001-32',
+        Email = 'admin@trilogo.com.br',
+        Birthday = '2016-03-09',
+        AddressId = LAST_INSERT_ID(),
+        CreationDate = '2016-03-09';
 DELIMITER //
 CREATE PROCEDURE populate()
 BEGIN
-DECLARE v_rep int unsigned default 50;
-DECLARE v_ite int unsigned default 1;
-DECLARE v_name varchar(100) default '';
-WHILE v_ite < v_rep DO
-    SET v_name = lipsum(1, NULL, NULL);
-    INSERT INTO Addresses
-        SET Number = RandNumber(3),
-        Street = CONCAT('Rua', ' ', lipsum(2, 1, NULL)),
-        Neighborhood = lipsum(2, 1, NULL),
-        City = lipsum(2, 1, NULL),
-        State = lipsum(1, NULL, NULL);
-    INSERT INTO Users
-        SET Name = v_name,
-        Login = LOWER(v_name),
-        Password = RandString(16),
-        Cpf = RandNumber(11),
-        Email = CONCAT(LOWER(v_name), '@mail.com'),
-        Birthday = CURRENT_DATE - INTERVAL 25 YEAR - INTERVAL FLOOR(RAND() * 5000) DAY,
-        AddressId = LAST_INSERT_ID(),
-        CreationDate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 5000) DAY;
-    SET v_ite = v_ite + 1;
-END WHILE;
+    DECLARE v_rep int unsigned default 50;
+    DECLARE v_ite int unsigned default 1;
+    DECLARE v_name varchar(100) default '';
+    WHILE v_ite < v_rep DO
+        SET v_name = lipsum(1, NULL, NULL);
+        INSERT INTO Addresses
+            SET Number = RandNumber(3),
+            Street = CONCAT('Rua', ' ', lipsum(2, 1, NULL)),
+            Neighborhood = lipsum(2, 1, NULL),
+            City = lipsum(2, 1, NULL),
+            State = lipsum(1, NULL, NULL);
+        INSERT INTO Users
+            SET Name = v_name,
+            Login = LOWER(v_name),
+            Password = RandString(16),
+            Cpf = RandNumber(11),
+            Email = CONCAT(LOWER(v_name), '@mail.com'),
+            Birthday = CURRENT_DATE - INTERVAL 25 YEAR - INTERVAL FLOOR(RAND() * 5000) DAY,
+            AddressId = LAST_INSERT_ID(),
+            CreationDate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 5000) DAY;
+        SET v_ite = v_ite + 1;
+    END WHILE;
 END; //
 DELIMITER ;
 CALL populate();
