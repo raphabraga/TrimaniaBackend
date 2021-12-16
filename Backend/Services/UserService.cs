@@ -4,17 +4,14 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
-using System.Security.Cryptography;
 
 namespace Backend.Services
 {
     public class UserService
     {
         private readonly ApplicationContext _applicationContext;
-        private readonly Aes _applicationAes;
-        public UserService(ApplicationContext context, Aes aes)
+        public UserService(ApplicationContext context)
         {
-            _applicationAes = aes;
             _applicationContext = context;
             _applicationContext.Database.EnsureCreated();
         }

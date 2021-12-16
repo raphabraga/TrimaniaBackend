@@ -5,7 +5,7 @@ namespace Backend.Models
 {
     public class Order
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public User Client { get; set; }
         public decimal TotalValue { get; set; }
         public List<Order> Items { get; set; }

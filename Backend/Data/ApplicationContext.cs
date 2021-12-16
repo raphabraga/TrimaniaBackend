@@ -7,7 +7,8 @@ namespace Backend.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Address> Addresses { get; set; }
-
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<Product> Products { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
         }
@@ -29,6 +30,18 @@ namespace Backend.Data
                 entity.Property(e => e.Name).IsRequired();
                 entity.Property(e => e.Login).IsRequired();
                 entity.Property(e => e.Password).IsRequired();
+            });
+
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasMany(e => e.Items);
+                entity.HasOne(e => e.Client);
+            });
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
         }
     }
