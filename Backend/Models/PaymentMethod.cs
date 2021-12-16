@@ -1,6 +1,6 @@
 namespace Backend.Models
 {
-    enum PaymentMethod
+    public enum PaymentMethod
     {
         CREDIT_CARD,
         BANK_SLIP,

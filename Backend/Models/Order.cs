@@ -8,7 +8,7 @@ namespace Backend.Models
         public int Id { get; set; }
         public User Client { get; set; }
         public decimal TotalValue { get; set; }
-        public List<Order> Items { get; set; }
+        public List<Product> Items { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime CancelDate { get; set; }
         public DateTime FinishedDate { get; set; }
