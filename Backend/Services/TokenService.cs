@@ -19,6 +19,7 @@ namespace Backend.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Login),
                     new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, (user.Login == "admin") ? "Administrator" : "client")
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

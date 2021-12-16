@@ -99,21 +99,6 @@ CREATE FUNCTION lipsum(p_max_words SMALLINT
 END;
 //
 DELIMITER ;
-INSERT INTO Addresses
-   SET Number = '1305',
-   Street = 'Rua Doutor Ernesto Monteiro',
-   Neighborhood = 'Sapiranga',
-   City = 'Fortaleza',
-   State = 'CE';
-INSERT INTO Users
-    SET Name = 'Administrator',
-    Login = 'admin',
-    Password = '123456',
-    Cpf = '',
-    Email = 'admin@trilogo.com.br',
-    Birthday = "2016-03-09",
-    AddressId = LAST_INSERT_ID(),
-    CreationDate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 5000) DAY;
 
 DELIMITER //
 CREATE PROCEDURE populate()
