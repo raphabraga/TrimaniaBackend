@@ -2,6 +2,7 @@ namespace Backend.Models
 {
     public class Address
     {
+        public Address() { }
         public int Id { get; set; }
         public string Number { get; set; }
         public string Street { get; set; }

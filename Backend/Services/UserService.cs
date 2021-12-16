@@ -14,7 +14,6 @@ namespace Backend.Services
     {
         private readonly ApplicationContext _applicationContext;
         private readonly Aes _applicationAes;
-
         public UserService(ApplicationContext context, Aes aes)
         {
             _applicationAes = aes;
@@ -32,13 +31,13 @@ namespace Backend.Services
             return _applicationContext.Users.FirstOrDefault(user => user.Login == login);
         }
 
-        public List<User> Query(string query, string sort, int? queryPage)
+        public List<User> Query(string filter, string sort, int? queryPage)
         {
             int perPage = 10;
             List<User> users;
-            if (!string.IsNullOrEmpty(query))
-                users = _applicationContext.Users.Include(user => user.Address).Where(user => user.Login.Contains(query) ||
-            user.Name.Contains(query) || user.Email.Contains(query)).ToList();
+            if (!string.IsNullOrEmpty(filter))
+                users = _applicationContext.Users.Include(user => user.Address).Where(user => user.Login.Contains(filter) ||
+            user.Name.Contains(filter) || user.Email.Contains(filter)).ToList();
             else
                 users = _applicationContext.Users.Include(user => user.Address).ToList();
             if (sort == "asc")

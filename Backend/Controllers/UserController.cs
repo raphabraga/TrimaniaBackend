@@ -19,10 +19,10 @@ namespace Backend.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Get([FromQuery(Name = "query")] string query,
+        public IActionResult Get([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int page)
         {
-            return Ok(_userService.Query(query, sort, page));
+            return Ok(_userService.Query(filter, sort, page));
         }
 
         [HttpGet("{id}")]
