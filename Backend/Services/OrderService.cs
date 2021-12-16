@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using Backend.Data;
 using Backend.Models;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
 {
@@ -13,11 +15,17 @@ namespace Backend.Services
         public OrderService(ApplicationContext context)
         {
             _applicationContext = context;
+            _applicationContext.Database.EnsureCreated();
+        }
+
+        public List<Order> GetOrders(User user)
+        {
+            return _applicationContext.Orders.Include(order => order.Items).Where(order => order.Client.Id == user.Id).ToList();
         }
 
         public Order GetOpenOrder(User user)
         {
-            return _applicationContext.Orders.FirstOrDefault(order => order.Client == user &&
+            return _applicationContext.Orders.Include(order => order.Items).FirstOrDefault(order => order.Client.Id == user.Id &&
                 order.Status == OrderStatus.OPEN);
         }
         public Order CreateOrder(User user)
@@ -29,16 +37,23 @@ namespace Backend.Services
                 Client = user,
                 Status = OrderStatus.OPEN,
                 CreationDate = DateTime.Now,
+                Items = new List<Product>()
             };
             return order;
         }
         public Product AddToChart(User user, Product product)
         {
             Order order = CreateOrder(user);
-            if (order == null)
+            var isCreated = order == null;
+            if (isCreated)
                 order = GetOpenOrder(user);
             order.Items.Add(product);
             order.TotalValue += product.Price * product.Quantity;
+            if (isCreated)
+                _applicationContext.Update(order);
+            else
+                _applicationContext.Add(order);
+            _applicationContext.SaveChanges();
             return product;
         }
 
@@ -54,6 +69,7 @@ namespace Backend.Services
             {
                 order.Items.Remove(product);
                 order.TotalValue -= product.Price * product.Quantity;
+                _applicationContext.SaveChanges();
                 return true;
             }
         }
@@ -70,6 +86,7 @@ namespace Backend.Services
             {
                 product.Quantity++;
                 order.TotalValue += product.Price;
+                _applicationContext.SaveChanges();
                 return true;
             }
         }
@@ -87,6 +104,7 @@ namespace Backend.Services
                     return false;
                 product.Quantity--;
                 order.TotalValue -= product.Price;
+                _applicationContext.SaveChanges();
                 return true;
             }
         }
@@ -97,6 +115,8 @@ namespace Backend.Services
             if (order == null)
                 return false;
             order.Status = OrderStatus.CANCELLED;
+            order.CancelDate = DateTime.Now;
+            _applicationContext.SaveChanges();
             return true;
         }
 
@@ -106,11 +126,12 @@ namespace Backend.Services
             if (order == null)
                 return false;
             order.Status = OrderStatus.IN_PROGRESS;
+            _applicationContext.SaveChanges();
             ProcessPurchase(payment, order);
             return true;
         }
 
-        public async void ProcessPurchase(PaymentMethod payment, Order order)
+        public void ProcessPurchase(PaymentMethod payment, Order order)
         {
             int processingTime = 0;
             switch (payment)
@@ -125,11 +146,10 @@ namespace Backend.Services
                     processingTime = 10 * 60 * 1000; // 10min (in ms) processing
                     break;
             }
-
-            await Task.Delay(processingTime).ContinueWith(_ =>
-            {
-                order.Status = OrderStatus.COMPLETED;
-            });
+            Task.Delay(processingTime).Wait();
+            order.Status = OrderStatus.COMPLETED;
+            order.FinishedDate = DateTime.Now;
+            _applicationContext.SaveChanges();
         }
     }
 }

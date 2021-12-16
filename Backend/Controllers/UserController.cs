@@ -48,31 +48,25 @@ namespace Backend.Controllers
             return Ok("User successfully created on database\n\n" + user);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] User userUpdate)
+        [HttpPut]
+        public IActionResult Update([FromBody] User userUpdate)
         {
-            string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserById(id);
+            User user = _userService.GetUserByLogin(login);
 
-            if (role != "Administrator" && user.Login != login)
-                return Unauthorized("Operation forbidden for thÍis credentials");
-            else if (_userService.UpdateUser(id, userUpdate))
+            if (_userService.UpdateUser(user.Id, userUpdate))
                 return Ok("User successfully updated on database\n\n" + user);
             else
                 return BadRequest("No user with this ID on the database.");
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete]
+        public IActionResult Delete()
         {
-            string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserById(id);
+            User user = _userService.GetUserByLogin(login);
 
-            if (role != "Administrator" && user.Login != login)
-                return Unauthorized("Operation forbidden for thÍis credentials");
-            else if (_userService.DeleteUser(id))
+            if (_userService.DeleteUser(user.Id))
                 return Ok("User successfully deleted from database");
             else
                 return BadRequest("No user with this ID on the database.");
