@@ -24,7 +24,7 @@ namespace Backend.Services
 
         public User GetUserById(int id)
         {
-            return _applicationContext.Users.FirstOrDefault(user => user.Id == id);
+            return _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
         }
 
         public User GetUserByLogin(string login)
@@ -66,6 +66,41 @@ namespace Backend.Services
             return StringCipher.DecryptString(user.Password, _applicationAes.Key, _applicationAes.IV) == pwd;
         }
 
-        public User UpdateUser(int id)
+        public bool DeleteUser(int id)
+        {
+            User user = GetUserById(id);
+            if (user == null)
+                return false;
+            else
+            {
+                _applicationContext.Users.Remove(user);
+                _applicationContext.SaveChanges();
+                return true;
+            }
+        }
+
+        public bool UpdateUser(int id, User userUpdate)
+        {
+            User user = GetUserById(id);
+            if (user == null)
+                return false;
+            else
+            {
+                user.Login = userUpdate.Login;
+                user.Name = userUpdate.Name;
+                user.Cpf = userUpdate.Cpf;
+                user.Email = userUpdate.Email;
+                user.Password = StringCipher.EncryptString(userUpdate.Password,
+                _applicationAes.Key, _applicationAes.IV);
+                user.Birthday = userUpdate.Birthday;
+                user.Address.State = userUpdate.Address.State;
+                user.Address.City = userUpdate.Address.City;
+                user.Address.Neighborhood = userUpdate.Address.Neighborhood;
+                user.Address.Street = userUpdate.Address.Street;
+                user.Address.Number = userUpdate.Address.Number;
+                _applicationContext.SaveChanges();
+                return true;
+            }
+        }
     }
 }
