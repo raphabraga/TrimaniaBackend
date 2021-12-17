@@ -10,8 +10,8 @@ namespace Backend.Models
         public decimal TotalValue { get; set; }
         public List<Product> Items { get; set; }
         public DateTime CreationDate { get; set; }
-        public DateTime? CancelDate { get; set; }
-        public DateTime? FinishedDate { get; set; }
+        public DateTime CancelDate { get; set; }
+        public DateTime FinishedDate { get; set; }
         public OrderStatus Status { get; set; }
         public Order() { }
 

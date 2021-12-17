@@ -5,6 +5,7 @@ using Backend.Data;
 using Backend.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Backend.ViewModel;
 
 namespace Backend.Services
 {
@@ -23,14 +24,20 @@ namespace Backend.Services
             return _applicationContext.Orders.Include(order => order.Items).Where(order => order.Client.Id == user.Id).ToList();
         }
 
-        public Order GetOpenOrder(User user)
+        public Order GetOpenOrInProgressOrder(User user)
+        {
+            return _applicationContext.Orders.Include(order => order.Items)
+            .FirstOrDefault(order => order.Client.Id == user.Id &&
+                (order.Status == OrderStatus.OPEN || order.Status == OrderStatus.IN_PROGRESS));
+        }
+        public Order GetInProgressOrder(User user)
         {
             return _applicationContext.Orders.Include(order => order.Items).FirstOrDefault(order => order.Client.Id == user.Id &&
-                order.Status == OrderStatus.OPEN);
+                order.Status == OrderStatus.IN_PROGRESS);
         }
         public Order CreateOrder(User user)
         {
-            if (GetOpenOrder(user) != null)
+            if (GetOpenOrInProgressOrder(user) != null)
                 return null;
             Order order = new Order()
             {
@@ -46,7 +53,7 @@ namespace Backend.Services
             Order order = CreateOrder(user);
             var isCreated = order == null;
             if (isCreated)
-                order = GetOpenOrder(user);
+                order = GetOpenOrInProgressOrder(user);
             order.Items.Add(product);
             order.TotalValue += product.Price * product.Quantity;
             if (isCreated)
@@ -59,7 +66,7 @@ namespace Backend.Services
 
         public bool RemoveFromChart(User user, int id)
         {
-            Order order = GetOpenOrder(user);
+            Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
             Product product = order.Items.FirstOrDefault(item => item.Id == id);
@@ -76,7 +83,7 @@ namespace Backend.Services
 
         public bool IncreaseItemQuantity(User user, int id)
         {
-            Order order = GetOpenOrder(user);
+            Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
             Product product = order.Items.FirstOrDefault(item => item.Id == id);
@@ -92,7 +99,7 @@ namespace Backend.Services
         }
         public bool DecreaseItemQuantity(User user, int id)
         {
-            Order order = GetOpenOrder(user);
+            Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
             Product product = order.Items.FirstOrDefault(item => item.Id == id);
@@ -102,6 +109,8 @@ namespace Backend.Services
             {
                 if (product.Quantity < 1)
                     return false;
+                if (product.Quantity == 1)
+                    RemoveFromChart(user, id);
                 product.Quantity--;
                 order.TotalValue -= product.Price;
                 _applicationContext.SaveChanges();
@@ -111,7 +120,7 @@ namespace Backend.Services
 
         public bool CancelOrder(User user)
         {
-            Order order = GetOpenOrder(user);
+            Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
             order.Status = OrderStatus.CANCELLED;
@@ -120,14 +129,14 @@ namespace Backend.Services
             return true;
         }
 
-        public bool CheckoutOrder(User user, PaymentMethod payment)
+        public bool CheckoutOrder(User user, Payment payment)
         {
-            Order order = GetOpenOrder(user);
+            Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
             order.Status = OrderStatus.IN_PROGRESS;
             _applicationContext.SaveChanges();
-            ProcessPurchase(payment, order);
+            ProcessPurchase(payment.PaymentMethod, order);
             return true;
         }
 
@@ -140,10 +149,10 @@ namespace Backend.Services
                     processingTime = 0; // instant processing
                     break;
                 case PaymentMethod.CREDIT_CARD:
-                    processingTime = 1 * 60 * 1000; // 1min (in ms) processing
+                    processingTime = 5 * 1000; // 5s processing
                     break;
                 case PaymentMethod.BANK_SLIP:
-                    processingTime = 10 * 60 * 1000; // 10min (in ms) processing
+                    processingTime = 10 * 1000; // 10s processing
                     break;
             }
             Task.Delay(processingTime).Wait();

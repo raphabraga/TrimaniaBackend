@@ -5,7 +5,10 @@ namespace Backend.Models
 {
     public class User
     {
-        public User() { }
+        public User()
+        {
+            CreationDate = DateTime.Now;
+        }
         public int Id { get; set; }
         public string Login { get; set; }
         public string Name { get; set; }

@@ -64,7 +64,8 @@ namespace Backend.Services
         public bool DeleteUser(int id)
         {
             User user = GetUserById(id);
-            if (user == null)
+            bool hasRegisteredOrders = _applicationContext.Orders.Any(order => order.Client.Id == id);
+            if (user == null || hasRegisteredOrders)
                 return false;
             else
             {

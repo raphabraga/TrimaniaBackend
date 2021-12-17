@@ -69,7 +69,7 @@ namespace Backend.Controllers
             if (_userService.DeleteUser(user.Id))
                 return Ok("User successfully deleted from database");
             else
-                return BadRequest("No user with this ID on the database.");
+                return BadRequest("There is no user with this ID on the database or it has registered orders.");
         }
     }
 }
