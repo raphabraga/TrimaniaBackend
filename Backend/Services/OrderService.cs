@@ -5,7 +5,7 @@ using Backend.Data;
 using Backend.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Backend.ViewModel;
+using Backend.Models.ViewModels;
 
 namespace Backend.Services
 {

@@ -1,4 +1,4 @@
-namespace Backend.ViewModel
+namespace Backend.Models.ViewModels
 {
     public class AuthUser
     {

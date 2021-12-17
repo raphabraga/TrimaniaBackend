@@ -1,6 +1,4 @@
-using Backend.Models;
-
-namespace Backend.ViewModel
+namespace Backend.Models.ViewModels
 {
     public class Payment
     {

@@ -1,13 +1,10 @@
-using System;
-using System.Net;
 using System.Security.Claims;
-using System.Collections.Generic;
 using System.Linq;
 using Backend.Models;
 using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Backend.ViewModel;
+using Backend.Models.ViewModels;
 
 namespace Backend.Controllers
 {
