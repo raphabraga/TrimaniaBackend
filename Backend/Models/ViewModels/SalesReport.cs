@@ -6,7 +6,7 @@ namespace Backend.Models.ViewModels
     {
         public int FinishedOrdersAmount { get; set; }
         public int CancelledOrdersAmount { get; set; }
-        public decimal orders_total_value { get; set; }
+        public decimal OrdersTotalValue { get; set; }
         public List<Order> Orders { get; set; }
     }
 }
