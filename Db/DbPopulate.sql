@@ -15,7 +15,7 @@ begin
 END; //
 
 DELIMITER //
-DROP FUNCTION IF EXISTS `RandNumber`
+DROP FUNCTION IF EXISTS `RandNumber`;
 CREATE FUNCTION `RandNumber`(length SMALLINT(3)) RETURNS varchar(100) CHARSET utf8
 begin
     SET @returnStr = '';
@@ -30,7 +30,7 @@ begin
 END; //
 
 DELIMITER //
-DROP FUNCTION IF EXISTS `Lipsum`
+DROP FUNCTION IF EXISTS `Lipsum`;
 CREATE FUNCTION `Lipsum`(p_max_words SMALLINT
                        ,p_min_words SMALLINT
                        ,p_start_with_lipsum TINYINT(1)
@@ -102,6 +102,7 @@ CREATE FUNCTION `Lipsum`(p_max_words SMALLINT
 END;
 //
 
+DELIMITER ;
 INSERT INTO Addresses
         SET Number = '1305',
         Street = 'Av. Min. Gentil Barreira',
@@ -140,13 +141,13 @@ BEGIN
     DECLARE v_ite int unsigned default 1;
     DECLARE v_name varchar(100) default '';
     WHILE v_ite < v_rep DO
-        SET v_name = lipsum(1, NULL, NULL);
+        SET v_name = Lipsum(1, NULL, NULL);
         INSERT INTO Addresses
             SET Number = RandNumber(3),
-            Street = CONCAT('Rua', ' ', lipsum(2, 1, NULL)),
-            Neighborhood = lipsum(2, 1, NULL),
-            City = lipsum(2, 1, NULL),
-            State = lipsum(1, NULL, NULL);
+            Street = CONCAT('Rua', ' ', Lipsum(2, 1, NULL)),
+            Neighborhood = Lipsum(2, 1, NULL),
+            City = Lipsum(2, 1, NULL),
+            State = Lipsum(1, NULL, NULL);
         INSERT INTO Users
             SET Name = v_name,
             Login = CONCAT(LOWER(v_name), RandNumber(3)),
@@ -159,6 +160,8 @@ BEGIN
         SET v_ite = v_ite + 1;
     END WHILE;
 END; //
+
+DELIMITER ;
 CALL populateUsers();
 
 DELIMITER //
@@ -166,32 +169,39 @@ CREATE PROCEDURE populateOrders()
 BEGIN
     DECLARE v_rep int unsigned default 200;
     DECLARE v_ite int unsigned default 1;
-    DECLARE v_quantity unsigned default 50;
+    DECLARE v_quantity int unsigned default 50;
     DECLARE v_status int unsigned default 0;
     DECLARE v_cdate datetime(6) default CURRENT_DATE;
-    SET v_status = FLOOR(RAND() + 2);
-    SET v_cdate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 3000) DAY;
+    DECLARE v_price decimal(65,30) default 0;
+    DECLARE v_numprod int unsigned default 0;
     WHILE v_ite < v_rep DO
+        SET v_cdate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 3000) DAY;
+        SET v_status = ROUND(RAND() + 2);
+        SET v_price =  200 * (RAND() + 1);
+        SET v_numprod = FLOOR(5 * RAND())+1;
         IF v_status = 2 THEN
             INSERT INTO Orders
                 SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
                 CreationDate = v_cdate,
                 Status = v_status,
+                TotalValue = v_numprod * v_price,
                 CancelDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY,
-                FinishDate = '0001-01-01 00:00:00.000000';
+                FinishedDate = '0001-01-01 00:00:00.000000';
         ELSE 
             INSERT INTO Orders
                 SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
                 CreationDate = v_cdate,
                 Status = v_status,
+                TotalValue = v_numprod * v_price,
                 CancelDate = '0001-01-01 00:00:00.000000',
-                FinishDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY;
+                FinishedDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY;
         END IF;
-        INSERT INTO Product
-            Price = 200 * (RAND() + 1), 
-            Quantity = FLOOR(5 * RAND()),
+        INSERT INTO Products
+            SET Price = v_price, 
+            Quantity = v_numprod,
             OrderId = LAST_INSERT_ID();
         SET v_ite = v_ite + 1;
     END WHILE;
 END; //
+DELIMITER ;
 CALL populateOrders();
