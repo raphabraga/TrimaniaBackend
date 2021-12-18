@@ -4,12 +4,12 @@ version: "3.8"
 services:
   # Database
   db:
-    image: ubuntu/mysql
-
+    build: ./Db
     ports:
       - 3306:3306
     volumes:
       - db-data:/var/lib/mysql
+      - ./Db/DbScript.sh:/docker-entrypoint-initdb.d/init-database.sh
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
