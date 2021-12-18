@@ -1,5 +1,6 @@
 USE trimaniadb
 DELIMITER //
+DROP FUNCTION IF EXISTS `RandString`;
 CREATE FUNCTION `RandString`(length SMALLINT(3)) RETURNS varchar(100) CHARSET utf8
 begin
     SET @returnStr = '';
@@ -12,8 +13,9 @@ begin
     END WHILE;
     RETURN @returnStr;
 END; //
-DELIMITER ;
+
 DELIMITER //
+DROP FUNCTION IF EXISTS `RandNumber`
 CREATE FUNCTION `RandNumber`(length SMALLINT(3)) RETURNS varchar(100) CHARSET utf8
 begin
     SET @returnStr = '';
@@ -26,9 +28,10 @@ begin
     END WHILE;
     RETURN @returnStr;
 END; //
-DELIMITER ;
+
 DELIMITER //
-CREATE FUNCTION lipsum(p_max_words SMALLINT
+DROP FUNCTION IF EXISTS `Lipsum`
+CREATE FUNCTION `Lipsum`(p_max_words SMALLINT
                        ,p_min_words SMALLINT
                        ,p_start_with_lipsum TINYINT(1)
                        )
@@ -98,7 +101,7 @@ CREATE FUNCTION lipsum(p_max_words SMALLINT
         RETURN TRIM(CONCAT(v_result));
 END;
 //
-DELIMITER ;
+
 INSERT INTO Addresses
         SET Number = '1305',
         Street = 'Av. Min. Gentil Barreira',
@@ -129,8 +132,9 @@ INSERT INTO Addresses
         Birthday = '1987-05-19',
         AddressId = LAST_INSERT_ID(),
         CreationDate = '2018-01-22';
+
 DELIMITER //
-CREATE PROCEDURE populate()
+CREATE PROCEDURE populateUsers()
 BEGIN
     DECLARE v_rep int unsigned default 50;
     DECLARE v_ite int unsigned default 1;
@@ -155,5 +159,39 @@ BEGIN
         SET v_ite = v_ite + 1;
     END WHILE;
 END; //
-DELIMITER ;
-CALL populate();
+CALL populateUsers();
+
+DELIMITER //
+CREATE PROCEDURE populateOrders()
+BEGIN
+    DECLARE v_rep int unsigned default 200;
+    DECLARE v_ite int unsigned default 1;
+    DECLARE v_quantity unsigned default 50;
+    DECLARE v_status int unsigned default 0;
+    DECLARE v_cdate datetime(6) default CURRENT_DATE;
+    SET v_status = FLOOR(RAND() + 2);
+    SET v_cdate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 3000) DAY;
+    WHILE v_ite < v_rep DO
+        IF v_status = 2 THEN
+            INSERT INTO Orders
+                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
+                CreationDate = v_cdate,
+                Status = v_status,
+                CancelDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY,
+                FinishDate = '0001-01-01 00:00:00.000000';
+        ELSE 
+            INSERT INTO Orders
+                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
+                CreationDate = v_cdate,
+                Status = v_status,
+                CancelDate = '0001-01-01 00:00:00.000000',
+                FinishDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY;
+        END IF;
+        INSERT INTO Product
+            Price = 200 * (RAND() + 1), 
+            Quantity = FLOOR(5 * RAND()),
+            OrderId = LAST_INSERT_ID();
+        SET v_ite = v_ite + 1;
+    END WHILE;
+END; //
+CALL populateOrders();
