@@ -135,7 +135,7 @@ INSERT INTO Addresses
         CreationDate = '2018-01-22';
 
 DELIMITER //
-CREATE PROCEDURE populateUsers()
+CREATE PROCEDURE PopulateUsers()
 BEGIN
     DECLARE v_rep int unsigned default 50;
     DECLARE v_ite int unsigned default 1;
@@ -162,46 +162,79 @@ BEGIN
 END; //
 
 DELIMITER ;
-CALL populateUsers();
+CALL PopulateUsers();
 
 DELIMITER //
-CREATE PROCEDURE populateOrders()
+CREATE PROCEDURE PopulateProducts()
+BEGIN
+    DECLARE v_rep int unsigned default 100;
+    DECLARE v_ite int unsigned default 1;
+    WHILE v_ite < v_rep DO
+        INSERT INTO Products
+            SET Name = CONCAT(Lipsum(2, 2, NULL), ' Ref. ', UPPER(RandString(4))),
+            Description = Lipsum(10, 5, NULL),
+            Price = 500 * RAND() + 1,
+            StockQuantity = 50 + RAND()*100;
+        SET v_ite = v_ite + 1;
+    END WHILE;
+END; //
+DELIMITER ;
+CALL PopulateProducts();
+
+DELIMITER //
+CREATE PROCEDURE PopulateOrders()
 BEGIN
     DECLARE v_rep int unsigned default 200;
     DECLARE v_ite int unsigned default 1;
+    DECLARE v_rep2 int unsigned default 4;
+    DECLARE v_ite2 int unsigned default 1;
     DECLARE v_quantity int unsigned default 50;
     DECLARE v_status int unsigned default 0;
     DECLARE v_cdate datetime(6) default CURRENT_DATE;
     DECLARE v_price decimal(65,30) default 0;
     DECLARE v_numprod int unsigned default 0;
+    DECLARE v_lastid int unsigned default 0;
+    DECLARE v_acum decimal(65,30) default 0;
     WHILE v_ite < v_rep DO
         SET v_cdate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 3000) DAY;
         SET v_status = ROUND(RAND() + 2);
-        SET v_price =  200 * (RAND() + 1);
-        SET v_numprod = FLOOR(5 * RAND())+1;
         IF v_status = 2 THEN
             INSERT INTO Orders
                 SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
                 CreationDate = v_cdate,
                 Status = v_status,
-                TotalValue = v_numprod * v_price,
-                CancelDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY,
-                FinishedDate = '0001-01-01 00:00:00.000000';
+                TotalValue = 0,
+                CancellationDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY,
+                FinishingDate = NULL;
         ELSE 
             INSERT INTO Orders
                 SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
                 CreationDate = v_cdate,
                 Status = v_status,
-                TotalValue = v_numprod * v_price,
-                CancelDate = '0001-01-01 00:00:00.000000',
-                FinishedDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY;
+                TotalValue = 0,
+                CancellationDate = NULL,
+                FinishingDate = v_cdate + INTERVAL FLOOR(RAND()* 7) DAY;
         END IF;
-        INSERT INTO Products
-            SET Price = v_price, 
-            Quantity = v_numprod,
-            OrderId = LAST_INSERT_ID();
+        SET v_lastid = LAST_INSERT_ID();
+        SET v_rep2 = FLOOR(4*RAND() + 2);
+        WHILE v_ite2 < v_rep2 DO
+            SET v_numprod = 5 * RAND() + 1;
+            SET v_price = 500 * RAND() + 1;
+            INSERT INTO Items
+                SET ProductId = FLOOR(99 * RAND() + 1),
+                    Price = v_price,
+                    Quantity = v_numprod, 
+                    OrderId = v_lastid;
+        SET v_ite2 = v_ite2 + 1;
+        SET v_acum = v_acum + v_price*v_numprod;
+        END WHILE;
+        UPDATE Orders
+            SET TotalValue = v_acum
+            WHERE Id = v_lastid;
+        SET v_acum = 0;
         SET v_ite = v_ite + 1;
+        SET v_ite2 = 1;
     END WHILE;
 END; //
 DELIMITER ;
-CALL populateOrders();
+CALL PopulateOrders();
