@@ -12,6 +12,7 @@ namespace Backend.Services
         public ProductService(ApplicationContext context)
         {
             _applicationContext = context;
+            _applicationContext.Database.EnsureCreated();
         }
 
         public Product RegisterProduct(Product product)

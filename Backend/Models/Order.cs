@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Backend.Models.ViewModels;
 
 namespace Backend.Models
 {
@@ -8,7 +9,7 @@ namespace Backend.Models
         public int Id { get; set; }
         public User Client { get; set; }
         public decimal TotalValue { get; set; }
-        public List<Product> Items { get; set; }
+        public List<ChartItem> Items { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime CancelDate { get; set; }
         public DateTime FinishedDate { get; set; }

@@ -15,6 +15,7 @@ namespace Backend.Services
         public SalesReportService(ApplicationContext context)
         {
             _applicationContext = context;
+            _applicationContext.Database.EnsureCreated();
         }
         public SalesReport GenerateReport(DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter)
