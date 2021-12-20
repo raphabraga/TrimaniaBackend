@@ -55,6 +55,10 @@ namespace Backend.Services
             return true;
         }
 
+        public Product GetProductById(int id)
+        {
+            return _applicationContext.Products.FirstOrDefault(product => product.Id == id);
+        }
         public List<Product> GetProducts()
         {
             return _applicationContext.Products.ToList();
