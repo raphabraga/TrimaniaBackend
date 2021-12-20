@@ -6,8 +6,8 @@ namespace Backend.Models
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PaymentMethod
     {
-        CREDIT_CARD,
-        BANK_SLIP,
-        IN_CASH
+        CreditCard,
+        BankSlip,
+        InCash
     }
 }

@@ -30,12 +30,12 @@ namespace Backend.Services
         {
             return _applicationContext.Orders.Include(order => order.Items)
             .FirstOrDefault(order => order.Client.Id == user.Id &&
-                (order.Status == OrderStatus.OPEN || order.Status == OrderStatus.IN_PROGRESS));
+                (order.Status == OrderStatus.Open || order.Status == OrderStatus.InProgress));
         }
         public Order GetInProgressOrder(User user)
         {
             return _applicationContext.Orders.Include(order => order.Items).FirstOrDefault(order => order.Client.Id == user.Id &&
-                order.Status == OrderStatus.IN_PROGRESS);
+                order.Status == OrderStatus.InProgress);
         }
         public Order CreateOrder(User user)
         {
@@ -44,7 +44,7 @@ namespace Backend.Services
             Order order = new Order()
             {
                 Client = user,
-                Status = OrderStatus.OPEN,
+                Status = OrderStatus.Open,
                 CreationDate = DateTime.Now,
                 Items = new List<ChartItem>()
             };
@@ -137,8 +137,8 @@ namespace Backend.Services
             Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
-            order.Status = OrderStatus.CANCELLED;
-            order.CancelDate = DateTime.Now;
+            order.Status = OrderStatus.Cancelled;
+            order.CancellationDate = DateTime.Now;
             _applicationContext.SaveChanges();
             return true;
         }
@@ -148,7 +148,7 @@ namespace Backend.Services
             Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
-            order.Status = OrderStatus.IN_PROGRESS;
+            order.Status = OrderStatus.InProgress;
             _applicationContext.SaveChanges();
             ProcessPurchase(payment.PaymentMethod, order);
             return true;
@@ -159,19 +159,19 @@ namespace Backend.Services
             int processingTime = 0;
             switch (payment)
             {
-                case PaymentMethod.IN_CASH:
+                case PaymentMethod.InCash:
                     processingTime = 0; // instant processing
                     break;
-                case PaymentMethod.CREDIT_CARD:
+                case PaymentMethod.CreditCard:
                     processingTime = 5 * 1000; // 5s processing
                     break;
-                case PaymentMethod.BANK_SLIP:
+                case PaymentMethod.BankSlip:
                     processingTime = 10 * 1000; // 10s processing
                     break;
             }
             Task.Delay(processingTime).Wait();
-            order.Status = OrderStatus.COMPLETED;
-            order.FinishedDate = DateTime.Now;
+            order.Status = OrderStatus.Finished;
+            order.FinishingDate = DateTime.Now;
             _applicationContext.SaveChanges();
         }
     }

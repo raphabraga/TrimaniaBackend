@@ -11,9 +11,9 @@ namespace Backend.Models
         public User Client { get; set; }
         public decimal TotalValue { get; set; }
         public List<ChartItem> Items { get; set; }
-        public DateTime CreationDate { get; set; }
-        public DateTime CancelDate { get; set; }
-        public DateTime FinishedDate { get; set; }
+        public DateTime? CreationDate { get; set; }
+        public DateTime? CancellationDate { get; set; }
+        public DateTime? FinishingDate { get; set; }
         public OrderStatus Status { get; set; }
 
     }

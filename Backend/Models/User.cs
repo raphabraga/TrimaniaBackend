@@ -17,10 +17,10 @@ namespace Backend.Models
         public string Email { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
-        public DateTime CreationDate { get; set; }
+        public DateTime? CreationDate { get; set; }
         public Address Address { get; set; }
 
         public override string ToString()
