@@ -53,6 +53,7 @@ namespace Backend.Services
             if (product == null)
                 return false;
             _applicationContext.Remove(product);
+            _applicationContext.SaveChanges();
             return true;
         }
 

@@ -33,7 +33,6 @@ builder.Services.AddAuthentication(o =>
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationContext>(options =>
-//options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 options.UseMySql(Environment.GetEnvironmentVariable("DB_CString"),
 new MySqlServerVersion(new Version(8, 0, 27))));
 builder.Services.AddScoped<UserService>();
