@@ -31,11 +31,14 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddProductToChart([FromBody] Product product)
+        public IActionResult AddProductToChart([FromBody] AddToChartRequest request)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            return Ok(_orderService.AddToChart(user, product));
+            ChartItem item = _orderService.AddToChart(user, request.ProductId, request.Quantity);
+            if (item == null)
+                return BadRequest("The quantity ordered exceed the number of the product in stock.");
+            return Ok(item);
         }
 
         [HttpPut]

@@ -15,6 +15,7 @@ namespace Backend.Services
         public SalesReportService(ApplicationContext context)
         {
             _applicationContext = context;
+            _applicationContext.Database.EnsureCreated();
         }
         public SalesReport GenerateReport(DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter)
@@ -39,9 +40,9 @@ namespace Backend.Services
                 orders = OrdersFiltered;
             }
             int amountFinished = orders.Aggregate(0, (sum, order) =>
-            order.Status == OrderStatus.COMPLETED ? sum + 1 : sum);
+            order.Status == OrderStatus.Finished ? sum + 1 : sum);
             int amountCancelled = orders.Aggregate(0, (sum, order) =>
-            order.Status == OrderStatus.CANCELLED ? sum + 1 : sum);
+            order.Status == OrderStatus.Cancelled ? sum + 1 : sum);
             decimal ordersTotal = orders.Aggregate(0m, (sum, order) => sum + order.TotalValue);
             return new SalesReport
             {

@@ -1,10 +1,8 @@
 using System.Linq;
 using System.Security.Claims;
-using System.Data;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
