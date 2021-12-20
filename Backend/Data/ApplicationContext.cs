@@ -9,6 +9,8 @@ namespace Backend.Data
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
+
+        public DbSet<ChartItem> Items { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
         }
@@ -42,6 +44,18 @@ namespace Backend.Data
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.Price).IsRequired();
+                entity.Property(e => e.StockQuantity).IsRequired();
+            });
+
+            modelBuilder.Entity<ChartItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Price).IsRequired();
+                entity.Property(e => e.Quantity).IsRequired();
+                entity.Property(e => e.ProductId).IsRequired();
             });
         }
     }

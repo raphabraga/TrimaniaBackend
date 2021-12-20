@@ -6,6 +6,7 @@ namespace Backend.Models
 {
     public class Order
     {
+        public Order() { }
         public int Id { get; set; }
         public User Client { get; set; }
         public decimal TotalValue { get; set; }
@@ -14,7 +15,6 @@ namespace Backend.Models
         public DateTime CancelDate { get; set; }
         public DateTime FinishedDate { get; set; }
         public OrderStatus Status { get; set; }
-        public Order() { }
 
     }
 }

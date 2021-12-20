@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Controllers
 {
     [ApiController]
-    [Route("product")]
+    [Route("products")]
     [Authorize(Roles = "Administrator")]
     public class ProductController : ControllerBase
     {
@@ -44,7 +44,7 @@ namespace Backend.Controllers
             return Ok("The product was successfully deleted from the database.");
         }
 
-        [HttpPut("{id")]
+        [HttpPut("{id}")]
         public IActionResult UpdateProduct(int id, [FromBody] Product updatedProduct)
         {
             Product product = _productService.UpdateProduct(id, updatedProduct);
