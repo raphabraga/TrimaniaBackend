@@ -62,14 +62,16 @@ namespace Backend.Services
             order.TotalValue += product.Price * quantity;
             ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == productId);
             if (item == null)
-                order.Items.Add(new ChartItem
+            {
+                item = new ChartItem
                 {
                     ProductId = product.Id,
                     Price = product.Price,
                     Quantity = quantity
-                });
-            else
-                item.Quantity += quantity;
+                };
+                order.Items.Add(item);
+            }
+            item.Quantity += quantity;
             if (isCreated)
                 _applicationContext.Update(order);
             else
