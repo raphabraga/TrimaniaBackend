@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,8 +33,15 @@ builder.Services.AddAuthentication(o =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddApiVersioning(config =>
+{
+    config.DefaultApiVersion = new ApiVersion(1, 0);
+    config.AssumeDefaultVersionWhenUnspecified = true;
+    config.ReportApiVersions = true;
+});
 builder.Services.AddDbContext<ApplicationContext>(options =>
-options.UseMySql(Environment.GetEnvironmentVariable("DB_CString"),
+//options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+options.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
 new MySqlServerVersion(new Version(8, 0, 27))));
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<OrderService>();
