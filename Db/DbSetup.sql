@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `Addresses` (
   `State` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE `Addresses` AUTO_INCREMENT=1;
 CREATE TABLE IF NOT EXISTS `Users` (
   `Id` int NOT NULL AUTO_INCREMENT,
   `Login` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS `Users` (
   KEY `IX_Users_AddressId` (`AddressId`),
   CONSTRAINT `FK_Users_Addresses_AddressId` FOREIGN KEY (`AddressId`) REFERENCES `Addresses` (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE `Users` AUTO_INCREMENT=1;
 CREATE TABLE IF NOT EXISTS `Products` (
   `Id` int NOT NULL AUTO_INCREMENT,
   `Name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
@@ -37,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `Products` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `IX_Products_Name` (`Name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE `Products` AUTO_INCREMENT=1;
 CREATE TABLE IF NOT EXISTS `Orders` (
   `Id` int NOT NULL AUTO_INCREMENT,
   `ClientId` int DEFAULT NULL,
@@ -48,14 +51,18 @@ CREATE TABLE IF NOT EXISTS `Orders` (
   PRIMARY KEY (`Id`),
   KEY `IX_Orders_ClientId` (`ClientId`),
   CONSTRAINT `FK_Orders_Users_ClientId` FOREIGN KEY (`ClientId`) REFERENCES `Users` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE `Orders` AUTO_INCREMENT=1;
 CREATE TABLE IF NOT EXISTS `Items` (
   `Id` int NOT NULL AUTO_INCREMENT,
-  `ProductId` int NOT NULL,
+  `ProductId` int DEFAULT NULL,
   `Price` decimal(65,30) NOT NULL,
   `Quantity` int NOT NULL,
   `OrderId` int DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_Items_OrderId` (`OrderId`),
-  CONSTRAINT `FK_Items_Orders_OrderId` FOREIGN KEY (`OrderId`) REFERENCES `Orders` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `IX_Items_ProductId` (`ProductId`),
+  CONSTRAINT `FK_Items_Orders_OrderId` FOREIGN KEY (`OrderId`) REFERENCES `Orders` (`Id`),
+  CONSTRAINT `FK_Items_Products_ProductId` FOREIGN KEY (`ProductId`) REFERENCES `Products` (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE `Items` AUTO_INCREMENT=1;

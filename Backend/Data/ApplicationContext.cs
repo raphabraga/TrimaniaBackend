@@ -9,7 +9,6 @@ namespace Backend.Data
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
-
         public DbSet<ChartItem> Items { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
@@ -55,7 +54,6 @@ namespace Backend.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Price).IsRequired();
                 entity.Property(e => e.Quantity).IsRequired();
-                entity.Property(e => e.ProductId).IsRequired();
             });
         }
     }
