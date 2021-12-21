@@ -60,12 +60,12 @@ namespace Backend.Services
             if (isCreated)
                 order = GetOpenOrInProgressOrder(user);
             order.TotalValue += product.Price * quantity;
-            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == productId);
+            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == productId);
             if (item == null)
             {
                 item = new ChartItem
                 {
-                    ProductId = product.Id,
+                    Product = product,
                     Price = product.Price,
                     Quantity = quantity
                 };
@@ -85,7 +85,7 @@ namespace Backend.Services
             Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
-            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
+            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 return false;
             else
@@ -102,7 +102,7 @@ namespace Backend.Services
             Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
-            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
+            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 return false;
             else
@@ -118,7 +118,7 @@ namespace Backend.Services
             Order order = GetOpenOrInProgressOrder(user);
             if (order == null)
                 return false;
-            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
+            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 return false;
             else
