@@ -155,16 +155,20 @@ namespace Backend.Services
                     processingTime = 0; // instant processing
                     break;
                 case PaymentMethod.CreditCard:
-                    processingTime = 5 * 1000; // 5s processing
+                    processingTime = 1 * 1000 * 60; // 1min processing
                     break;
                 case PaymentMethod.BankSlip:
-                    processingTime = 10 * 1000; // 10s processing
+                    processingTime = 5 * 1000 * 60; // 5min processing
                     break;
             }
-            Task.Delay(processingTime).Wait();
-            order.Status = OrderStatus.Finished;
-            order.FinishingDate = DateTime.Now;
-            _applicationContext.SaveChanges();
+            Task.Delay(processingTime).ContinueWith(_ =>
+            {
+                using var context = new ApplicationContext();
+                order.Status = OrderStatus.Finished;
+                order.FinishingDate = DateTime.Now;
+                context.Update(order);
+                context.SaveChanges();
+            });
         }
     }
 }
