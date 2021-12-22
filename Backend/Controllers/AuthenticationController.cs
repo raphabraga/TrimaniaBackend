@@ -12,10 +12,12 @@ namespace Backend.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly TokenService _tokenService;
 
-        public AuthenticationController(UserService service)
+        public AuthenticationController(UserService uService, TokenService tService)
         {
-            _userService = service;
+            _userService = uService;
+            _tokenService = tService;
         }
 
         [HttpPost]
@@ -28,7 +30,7 @@ namespace Backend.Controllers
                 return NotFound("User not registered on the database.");
             if (!_userService.CheckPassword(user, authUser.Password))
                 return Unauthorized("Incorrect login and/or password.");
-            string token = TokenService.GenerateToken(user);
+            string token = _tokenService.GenerateToken(user);
             return Ok(new { token });
         }
     }
