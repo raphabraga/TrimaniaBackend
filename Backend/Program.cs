@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +41,12 @@ builder.Services.AddApiVersioning(config =>
     config.AssumeDefaultVersionWhenUnspecified = true;
     config.ReportApiVersions = true;
 });
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
+});
 builder.Services.AddDbContext<ApplicationContext>(options =>
 // options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 options.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
@@ -57,13 +65,10 @@ if (app.Environment.IsDevelopment())
 {
 
 }
-
+app.UseResponseCompression();
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
