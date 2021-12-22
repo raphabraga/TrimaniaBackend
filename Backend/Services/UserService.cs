@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 using Backend.Models.ViewModels;
+using Backend.Interfaces;
 
 namespace Backend.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly ApplicationContext _applicationContext;
         public UserService(ApplicationContext context)

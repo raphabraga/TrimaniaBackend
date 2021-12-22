@@ -7,16 +7,17 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
+using Backend.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
+// var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -48,23 +49,22 @@ builder.Services.AddResponseCompression(options =>
     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
 });
 builder.Services.AddDbContext<ApplicationContext>(options =>
-// options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+//options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 options.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
 new MySqlServerVersion(new Version(8, 0, 27))));
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<SalesReportService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISalesReportService, SalesReportService>();
 builder.Services.AddScoped<ApplicationContext>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) { }
 
-}
 app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseAuthentication();

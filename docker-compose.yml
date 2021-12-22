@@ -21,7 +21,7 @@ services:
     build: ./Backend/
     environment:
       DefaultConnection: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
-      AuthKey: triminia-jwt-authentication-key
+      AuthKey: trimania-jwt-authentication-key
     ports:
       - 5001:5044
       - 5002:5045

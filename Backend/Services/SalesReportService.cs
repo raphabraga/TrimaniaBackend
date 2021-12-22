@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Backend.Data;
+using Backend.Interfaces;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
 {
-    public class SalesReportService
+    public class SalesReportService : ISalesReportService
     {
         private readonly ApplicationContext _applicationContext;
 

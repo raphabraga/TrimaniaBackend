@@ -7,6 +7,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models.ViewModels;
+using Backend.Interfaces;
 
 namespace Backend.Controllers
 {
@@ -16,11 +17,11 @@ namespace Backend.Controllers
     [Authorize]
     public class OrderController : ControllerBase
     {
-        private readonly OrderService _orderService;
-        private readonly UserService _userService;
-        private readonly ProductService _productService;
+        private readonly IOrderService _orderService;
+        private readonly IUserService _userService;
+        private readonly IProductService _productService;
 
-        public OrderController(OrderService oService, UserService uService, ProductService pService)
+        public OrderController(IOrderService oService, IUserService uService, IProductService pService)
         {
             _orderService = oService;
             _userService = uService;
@@ -89,10 +90,13 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            if (_orderService.CancelOrder(user))
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return UnprocessableEntity("There is no open order to be cancelled.");
+            if (_orderService.CancelOrder(order))
                 return Ok("The order was successfully cancelled");
             else
-                return UnprocessableEntity("There is no open order to be cancelled.");
+                return BadRequest("Unable to cancel this order.");
         }
 
         [HttpPut]

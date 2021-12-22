@@ -2,9 +2,9 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
-using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Backend.Models.ViewModels;
+using Backend.Interfaces;
 
 namespace Backend.Controllers
 {
@@ -14,8 +14,8 @@ namespace Backend.Controllers
     [Route("api/v{version:apiVersion}/users")]
     public class UsersController : ControllerBase
     {
-        private readonly UserService _userService;
-        public UsersController(UserService service)
+        private readonly IUserService _userService;
+        public UsersController(IUserService service)
         {
             _userService = service;
         }
@@ -34,7 +34,7 @@ namespace Backend.Controllers
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserById(id);
-            if (role != "Administrator" && user.Login != login)
+            if (role != "Administrator" && user?.Login != login)
                 return Unauthorized("Credentials not allowed for the operation.");
             if (user == null)
                 return NotFound("No user registered on the database with this ID");
@@ -54,7 +54,8 @@ namespace Backend.Controllers
             user = _userService.Query(userInfo.Email, null, null).FirstOrDefault();
             if (user != null)
                 return Conflict("User already registered on the database with this email.");
-            _userService.CreateUser(userInfo);
+            if (_userService.CreateUser(userInfo) == null)
+                return BadRequest("Required fields for user register not filled.");
             return CreatedAtAction(nameof(UserById), new { id = userInfo.Id }, new ViewUser(userInfo));
         }
 
