@@ -12,7 +12,7 @@ namespace Backend.Services
         public static string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("chave-autenticacao-tdp");
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

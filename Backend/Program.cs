@@ -16,7 +16,7 @@ using System.Linq;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var key = Encoding.ASCII.GetBytes("chave-autenticacao-tdp");
+var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
