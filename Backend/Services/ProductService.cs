@@ -35,9 +35,7 @@ namespace Backend.Services
 
         public Product UpdateProductQuantity(int id, int amount)
         {
-            Product product = _applicationContext.Products.FirstOrDefault(product => product.Id == id);
-            if (product == null)
-                return null;
+            Product product = GetProductById(id);
             if (product.StockQuantity < amount)
                 return null;
             product.StockQuantity -= amount;

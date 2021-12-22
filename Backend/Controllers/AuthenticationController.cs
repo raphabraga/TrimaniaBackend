@@ -22,14 +22,14 @@ namespace Backend.Controllers
         public IActionResult Login(AuthUser authUser)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Data provided in the wrong format.");
+                return BadRequest("JSON object provided is formatted wrong.");
             User user = _userService.GetUserByLogin(authUser.Login);
             if (user == null)
                 return NotFound("User not registered on the database.");
             if (!_userService.CheckPassword(user, authUser.Password))
-                return BadRequest("Incorrect login and/or password.");
+                return Unauthorized("Incorrect login and/or password.");
             string token = TokenService.GenerateToken(user);
-            return Ok("Authentication token: " + token);
+            return Ok(new { token });
         }
     }
 }

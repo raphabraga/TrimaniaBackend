@@ -23,24 +23,33 @@ namespace Backend.Services
 
         public List<Order> GetOrders(User user)
         {
-            return _applicationContext.Orders.Include(order => order.Items).Where(order => order.Client.Id == user.Id).ToList();
+            return _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
+            .Where(order => order.Client.Id == user.Id).ToList();
+        }
+        public Order GetOrderById(int id)
+        {
+            return _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
+            .FirstOrDefault(order => order.Id == id);
         }
 
         public Order GetOpenOrInProgressOrder(User user)
         {
-            return _applicationContext.Orders.Include(order => order.Items)
-            .FirstOrDefault(order => order.Client.Id == user.Id &&
-                (order.Status == OrderStatus.Open || order.Status == OrderStatus.InProgress));
+            return GetOrders(user).FirstOrDefault(order =>
+            order.Status == OrderStatus.Open || order.Status == OrderStatus.InProgress);
+        }
+
+        public Order GetOpenOrder(User user)
+        {
+            return GetOrders(user).FirstOrDefault(order =>
+            order.Status == OrderStatus.Open);
         }
         public Order GetInProgressOrder(User user)
         {
-            return _applicationContext.Orders.Include(order => order.Items).FirstOrDefault(order => order.Client.Id == user.Id &&
-                order.Status == OrderStatus.InProgress);
+            return GetOrders(user).FirstOrDefault(order =>
+            order.Status == OrderStatus.InProgress);
         }
         public Order CreateOrder(User user)
         {
-            if (GetOpenOrInProgressOrder(user) != null)
-                return null;
             Order order = new Order()
             {
                 Client = user,
@@ -48,19 +57,17 @@ namespace Backend.Services
                 CreationDate = DateTime.Now,
                 Items = new List<ChartItem>()
             };
+            _applicationContext.Orders.Add(order);
+            _applicationContext.SaveChanges();
             return order;
         }
-        public ChartItem AddToChart(User user, int productId, int quantity)
+        public ChartItem AddToChart(Order order, int productId, int quantity)
         {
             Product product = _productService.UpdateProductQuantity(productId, quantity);
             if (product == null)
                 return null;
-            Order order = CreateOrder(user);
-            var isCreated = (order == null);
-            if (isCreated)
-                order = GetOpenOrInProgressOrder(user);
             order.TotalValue += product.Price * quantity;
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == productId);
+            ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == productId);
             if (item == null)
             {
                 item = new ChartItem
@@ -71,20 +78,15 @@ namespace Backend.Services
                 };
                 order.Items.Add(item);
             }
-            item.Quantity += quantity;
-            if (isCreated)
-                _applicationContext.Update(order);
             else
-                _applicationContext.Add(order);
+                item.Quantity += quantity;
+            _applicationContext.Update(order);
             _applicationContext.SaveChanges();
             return item;
         }
 
-        public bool RemoveFromChart(User user, int id)
+        public bool RemoveFromChart(Order order, int id)
         {
-            Order order = GetOpenOrInProgressOrder(user);
-            if (order == null)
-                return false;
             ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 return false;
@@ -92,64 +94,61 @@ namespace Backend.Services
             {
                 order.Items.Remove(item);
                 order.TotalValue -= item.Price * item.Quantity;
+                _productService.UpdateProductQuantity(id, -item.Quantity);
                 _applicationContext.SaveChanges();
                 return true;
             }
         }
 
-        public bool IncreaseItemQuantity(User user, int id)
+        public bool ChangeItemQuantity(Order order, int id, string sign)
         {
-            Order order = GetOpenOrInProgressOrder(user);
-            if (order == null)
-                return false;
             ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 return false;
             else
             {
-                item.Quantity++;
-                order.TotalValue += item.Price;
+                if (sign == "Increase")
+                {
+                    if (_productService.GetProductById(id).StockQuantity > 1)
+                    {
+                        item.Quantity++;
+                        order.TotalValue += item.Price;
+                        _productService.UpdateProductQuantity(id, 1);
+                    }
+                    else
+                        return false;
+                }
+                else
+                {
+                    if (item.Quantity < 1)
+                        return false;
+                    if (item.Quantity == 1)
+                        RemoveFromChart(order, id);
+                    item.Quantity--;
+                    order.TotalValue -= item.Price;
+                    _productService.UpdateProductQuantity(id, -1);
+                }
                 _applicationContext.SaveChanges();
                 return true;
             }
         }
-        public bool DecreaseItemQuantity(User user, int id)
-        {
-            Order order = GetOpenOrInProgressOrder(user);
-            if (order == null)
-                return false;
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
-            if (item == null)
-                return false;
-            else
-            {
-                if (item.Quantity < 1)
-                    return false;
-                if (item.Quantity == 1)
-                    RemoveFromChart(user, id);
-                item.Quantity--;
-                order.TotalValue -= item.Price;
-                _applicationContext.SaveChanges();
-                return true;
-            }
-        }
-
         public bool CancelOrder(User user)
         {
-            Order order = GetOpenOrInProgressOrder(user);
+            Order order = GetOpenOrder(user);
             if (order == null)
                 return false;
             order.Status = OrderStatus.Cancelled;
             order.CancellationDate = DateTime.Now;
+            order.Items.ForEach(item =>
+            {
+                _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
+            });
             _applicationContext.SaveChanges();
             return true;
         }
 
-        public bool CheckoutOrder(User user, Payment payment)
+        public bool CheckoutOrder(Order order, Payment payment)
         {
-            Order order = GetOpenOrInProgressOrder(user);
-            if (order == null)
-                return false;
             order.Status = OrderStatus.InProgress;
             _applicationContext.SaveChanges();
             ProcessPurchase(payment.PaymentMethod, order);
