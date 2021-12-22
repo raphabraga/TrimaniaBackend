@@ -9,16 +9,16 @@ namespace Backend.Interfaces
         public interface OrderService
         {
             public abstract List<Order> GetOrders(User user);
-            public abstract Order GetOpenOrInProgressOrder(User user);
+            public Order GetOrderById(int id);
+            public abstract Order GetOpenOrder(User user);
             public abstract Order GetInProgressOrder(User user);
             public abstract Order CreateOrder(User user);
-            public abstract Product AddToChart(User user, Product product);
-            public abstract bool RemoveFromChart(User user, int id);
-            public abstract bool IncreaseItemQuantity(User user, int id);
-            public abstract bool DecreaseItemQuantity(User user, int id);
-            public abstract bool CancelOrder(User user);
-            public abstract bool CheckoutOrder(User user, Payment payment);
-            public abstract void ProcessPurchase(PaymentMethod payment, Order order);
+            public abstract Product AddToChart(Order order, int productId, int quantity);
+            public abstract bool RemoveFromChart(Order order, int id);
+            public abstract bool ChangeItemQuantity(Order order, int id, string sign);
+            public abstract bool CancelOrder(Order order);
+            public abstract bool CheckoutOrder(Order order, Payment payment);
+            public abstract void ProcessPurchase(Order order, PaymentMethod payment);
         }
     }
 }

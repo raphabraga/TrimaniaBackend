@@ -31,13 +31,6 @@ namespace Backend.Services
             return _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
             .FirstOrDefault(order => order.Id == id);
         }
-
-        public Order GetOpenOrInProgressOrder(User user)
-        {
-            return GetOrders(user).FirstOrDefault(order =>
-            order.Status == OrderStatus.Open || order.Status == OrderStatus.InProgress);
-        }
-
         public Order GetOpenOrder(User user)
         {
             return GetOrders(user).FirstOrDefault(order =>
@@ -132,11 +125,8 @@ namespace Backend.Services
                 return true;
             }
         }
-        public bool CancelOrder(User user)
+        public bool CancelOrder(Order order)
         {
-            Order order = GetOpenOrder(user);
-            if (order == null)
-                return false;
             order.Status = OrderStatus.Cancelled;
             order.CancellationDate = DateTime.Now;
             order.Items.ForEach(item =>
@@ -151,11 +141,11 @@ namespace Backend.Services
         {
             order.Status = OrderStatus.InProgress;
             _applicationContext.SaveChanges();
-            ProcessPurchase(payment.PaymentMethod, order);
+            ProcessPurchase(order, payment.PaymentMethod);
             return true;
         }
 
-        public void ProcessPurchase(PaymentMethod payment, Order order)
+        public void ProcessPurchase(Order order, PaymentMethod payment)
         {
             int processingTime = 0;
             switch (payment)

@@ -89,10 +89,13 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            if (_orderService.CancelOrder(user))
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return UnprocessableEntity("There is no open order to be cancelled.");
+            if (_orderService.CancelOrder(order))
                 return Ok("The order was successfully cancelled");
             else
-                return UnprocessableEntity("There is no open order to be cancelled.");
+                return BadRequest("Unable to cancel this order.");
         }
 
         [HttpPut]
