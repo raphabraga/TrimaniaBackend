@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Backend.Data;
+using Backend.Interfaces;
 using Backend.Models;
 
 namespace Backend.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly ApplicationContext _applicationContext;
 

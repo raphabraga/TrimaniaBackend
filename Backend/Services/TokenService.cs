@@ -2,16 +2,18 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Backend.Interfaces;
 using Backend.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Services
 {
-    public class TokenService
+    public class TokenService : ITokenService
     {
         public string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            // var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
             var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
             var tokenDescriptor = new SecurityTokenDescriptor
             {

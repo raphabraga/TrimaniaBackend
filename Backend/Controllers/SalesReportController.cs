@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
+using Backend.Interfaces;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Backend.Services;
@@ -17,10 +17,10 @@ namespace Backend.Controllers
 
     public class SalesReportController : ControllerBase
     {
-        private readonly SalesReportService _salesReportService;
-        private readonly UserService _userService;
+        private readonly ISalesReportService _salesReportService;
+        private readonly IUserService _userService;
 
-        public SalesReportController(SalesReportService rService, UserService uService)
+        public SalesReportController(ISalesReportService rService, IUserService uService)
         {
             _salesReportService = rService;
             _userService = uService;

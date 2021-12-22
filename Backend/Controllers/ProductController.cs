@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Backend.Interfaces;
 using Backend.Models;
-using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,8 +12,8 @@ namespace Backend.Controllers
     [Authorize(Roles = "Administrator")]
     public class ProductController : ControllerBase
     {
-        private readonly ProductService _productService;
-        public ProductController(ProductService service)
+        private readonly IProductService _productService;
+        public ProductController(IProductService service)
         {
             _productService = service;
         }

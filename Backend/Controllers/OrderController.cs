@@ -7,6 +7,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models.ViewModels;
+using Backend.Interfaces;
 
 namespace Backend.Controllers
 {
@@ -16,11 +17,11 @@ namespace Backend.Controllers
     [Authorize]
     public class OrderController : ControllerBase
     {
-        private readonly OrderService _orderService;
-        private readonly UserService _userService;
-        private readonly ProductService _productService;
+        private readonly IOrderService _orderService;
+        private readonly IUserService _userService;
+        private readonly IProductService _productService;
 
-        public OrderController(OrderService oService, UserService uService, ProductService pService)
+        public OrderController(IOrderService oService, IUserService uService, IProductService pService)
         {
             _orderService = oService;
             _userService = uService;

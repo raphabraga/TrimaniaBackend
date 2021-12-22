@@ -6,15 +6,16 @@ using Backend.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models.ViewModels;
+using Backend.Interfaces;
 
 namespace Backend.Services
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly ApplicationContext _applicationContext;
-        private readonly ProductService _productService;
+        private readonly IProductService _productService;
 
-        public OrderService(ApplicationContext context, ProductService service)
+        public OrderService(ApplicationContext context, IProductService service)
         {
             _productService = service;
             _applicationContext = context;
