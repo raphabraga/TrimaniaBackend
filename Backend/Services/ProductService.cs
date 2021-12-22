@@ -24,9 +24,7 @@ namespace Backend.Services
 
         public Product UpdateProduct(int id, Product updatedProduct)
         {
-            Product product = _applicationContext.Products.FirstOrDefault(product => product.Id == id);
-            if (product == null)
-                return null;
+            Product product = GetProductById(id);
             product.Name = updatedProduct.Name;
             product.Price = updatedProduct.Price;
             product.StockQuantity = updatedProduct.StockQuantity;
@@ -37,9 +35,7 @@ namespace Backend.Services
 
         public Product UpdateProductQuantity(int id, int amount)
         {
-            Product product = _applicationContext.Products.FirstOrDefault(product => product.Id == id);
-            if (product == null)
-                return null;
+            Product product = GetProductById(id);
             if (product.StockQuantity < amount)
                 return null;
             product.StockQuantity -= amount;
@@ -49,12 +45,17 @@ namespace Backend.Services
 
         public bool DeleteProduct(int id)
         {
-            Product product = _applicationContext.Products.FirstOrDefault(product => product.Id == id);
-            if (product == null)
+            Product product = GetProductById(id);
+            if (_applicationContext.Items.Any(item => item.Product.Id == id))
                 return false;
             _applicationContext.Remove(product);
             _applicationContext.SaveChanges();
             return true;
+        }
+
+        public Product GetProductByName(string name)
+        {
+            return _applicationContext.Products.FirstOrDefault(product => product.Name == name);
         }
 
         public Product GetProductById(int id)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.Models.ViewModels;
 
 namespace Backend.Services
 {
@@ -46,18 +47,14 @@ namespace Backend.Services
 
         public User CreateUser(User user)
         {
-            System.Console.WriteLine(BC.HashPassword("123456"));
             user.Password = BC.HashPassword(user.Password);
             _applicationContext.Users.Add(user);
             _applicationContext.SaveChanges();
             return user;
         }
 
-        public bool CheckPassword(string login, string pwd)
+        public bool CheckPassword(User user, string pwd)
         {
-            User user = GetUserByLogin(login);
-            if (user == null)
-                return false;
             return BC.Verify(pwd, user.Password);
         }
 
@@ -65,7 +62,7 @@ namespace Backend.Services
         {
             User user = GetUserById(id);
             bool hasRegisteredOrders = _applicationContext.Orders.Any(order => order.Client.Id == id);
-            if (user == null || hasRegisteredOrders)
+            if (hasRegisteredOrders)
                 return false;
             else
             {
@@ -75,27 +72,19 @@ namespace Backend.Services
             }
         }
 
-        public bool UpdateUser(int id, User userUpdate)
+        public bool UpdateUser(int id, UpdateUser userUpdate)
         {
             User user = GetUserById(id);
-            if (user == null)
-                return false;
-            else
-            {
-                user.Login = userUpdate.Login;
-                user.Name = userUpdate.Name;
-                user.Cpf = userUpdate.Cpf;
-                user.Email = userUpdate.Email;
-                user.Password = BC.HashPassword(userUpdate.Password);
-                user.Birthday = userUpdate.Birthday;
-                user.Address.State = userUpdate.Address.State;
-                user.Address.City = userUpdate.Address.City;
-                user.Address.Neighborhood = userUpdate.Address.Neighborhood;
-                user.Address.Street = userUpdate.Address.Street;
-                user.Address.Number = userUpdate.Address.Number;
-                _applicationContext.SaveChanges();
-                return true;
-            }
+            user.Name = userUpdate.Name;
+            user.Password = BC.HashPassword(userUpdate.Password);
+            user.Birthday = userUpdate.Birthday;
+            user.Address.State = userUpdate.Address.State;
+            user.Address.City = userUpdate.Address.City;
+            user.Address.Neighborhood = userUpdate.Address.Neighborhood;
+            user.Address.Street = userUpdate.Address.Street;
+            user.Address.Number = userUpdate.Address.Number;
+            _applicationContext.SaveChanges();
+            return true;
         }
     }
 }

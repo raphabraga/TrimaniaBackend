@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Linq;
 using Backend.Models;
@@ -9,35 +11,75 @@ using Backend.Models.ViewModels;
 namespace Backend.Controllers
 {
     [ApiController]
-    [Route("orders")]
+    [ApiVersion("1.0")]
+    [Route("/api/v{version:apiVersion}/orders")]
     [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly OrderService _orderService;
         private readonly UserService _userService;
+        private readonly ProductService _productService;
 
-        public OrderController(OrderService oService, UserService uService)
+        public OrderController(OrderService oService, UserService uService, ProductService pService)
         {
             _orderService = oService;
             _userService = uService;
+            _productService = pService;
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult OrderById(int id)
+        {
+            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+            string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
+            User user = _userService.GetUserByLogin(login);
+            Order order = _orderService.GetOrderById(id);
+            if (order == null)
+                return NotFound("No order registered on the database with this ID.");
+            if (role != "Administrator" && order.Client.Id != user.Id)
+                return Unauthorized("Credentials not allowed for the operation.");
+            return Ok(new ViewOrder(order));
         }
 
         [HttpGet]
-        public IActionResult GetUserOrders()
+        public IActionResult UserOrders()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            return Ok(_orderService.GetOrders(user));
+            if (user == null)
+                return NotFound("No user registered on the database with this credentials.");
+            return Ok(_orderService.GetOrders(user).Select(order => new ViewOrder(order)));
+        }
+
+        [HttpGet]
+        [Route("open")]
+        public IActionResult OpenOrder()
+        {
+            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+            User user = _userService.GetUserByLogin(login);
+            if (user == null)
+                return NotFound("No user registered on the database with this credentials.");
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return NotFound("The user has no open orders.");
+            return Ok(new ViewOrder(order));
         }
 
         [HttpPost]
         public IActionResult AddProductToChart([FromBody] AddToChartRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
+            if (_productService.GetProductById(request.ProductId) == null)
+                return NotFound("Product not registered on the database with this ID.");
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            ChartItem item = _orderService.AddToChart(user, request.ProductId, request.Quantity);
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                order = _orderService.CreateOrder(user);
+            ChartItem item = _orderService.AddToChart(order, request.ProductId, request.Quantity);
             if (item == null)
-                return BadRequest("The quantity ordered exceed the number of the product in stock.");
+                return UnprocessableEntity("The quantity ordered exceed the number of the product in stock.");
             return Ok(item);
         }
 
@@ -47,11 +89,10 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-
             if (_orderService.CancelOrder(user))
                 return Ok("The order was successfully cancelled");
             else
-                return BadRequest("Unable to cancel this order");
+                return UnprocessableEntity("There is no open order to be cancelled.");
         }
 
         [HttpPut]
@@ -60,49 +101,57 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-
-            if (_orderService.CheckoutOrder(user, payment))
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return NotFound("There is no open order in order to checkout a purchase.");
+            if (_orderService.CheckoutOrder(order, payment))
                 return Ok("The order was successfully completed");
             else
-                return BadRequest("Unable to complete this order");
+                return UnprocessableEntity("The chart is empty. Unable to checkout a purchase.");
         }
 
-        [HttpPut("{id}/remove")]
-
+        [HttpPut("remove-item/{id}")]
         public IActionResult RemoveProductFromChart(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            if (_orderService.RemoveFromChart(user, id))
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return NotFound("There is no open order in order to remove items from chart.");
+            if (_orderService.RemoveFromChart(order, id))
                 return Ok("Product was successfully removed from the chart");
             else
-                return BadRequest("Unable to remove this item from the chart");
+                return UnprocessableEntity("This item doesn't exist in the cart. Unable to remove it");
         }
 
-        [Route("{id}/{ch}")]
+        [Route("increase-item/{id}")]
         [HttpPut]
-        public IActionResult ChangeProductQuantity(int id, string ch)
+        public IActionResult IncreaseItemQuantity(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            if (_orderService.IncreaseItemQuantity(user, id))
-                return Ok("The quantity of the product was successfully increased");
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return NotFound("There is no open order in order to modify items from chart.");
+            if (_orderService.ChangeItemQuantity(order, id, "Increase"))
+                return Ok("The quantity of the product was successfully changed");
             else
-                return BadRequest("Unable to increase the quantity of this product");
+                return UnprocessableEntity("This item doesn't exist in the cart. Unable to modify it");
         }
 
-        [Route("{id}/dec")]
+        [Route("decrease-item/{id}")]
         [HttpPut]
-        public IActionResult DecreaseProductQuantity(int id, string ch)
+        public IActionResult DecreaseItemQuantity(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-            if (_orderService.DecreaseItemQuantity(user, id))
-                return Ok("The quantity of the product was successfully decreased");
+            Order order = _orderService.GetOpenOrder(user);
+            if (order == null)
+                return NotFound("There is no open order in order to modify items from chart.");
+            if (_orderService.ChangeItemQuantity(order, id, "Decrease"))
+                return Ok("The quantity of the product was successfully changed");
             else
-                return BadRequest("Unable to decrease the quantity of this product");
+                return UnprocessableEntity("This item doesn't exist in the cart. Unable to modify it");
         }
-
-
     }
 }

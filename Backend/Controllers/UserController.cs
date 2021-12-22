@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Backend.Models.ViewModels;
 
 namespace Backend.Controllers
 {
     [Authorize]
+    [ApiVersion("1.0")]
     [ApiController]
-    [Route("users")]
+    [Route("api/v{version:apiVersion}/users")]
     public class UsersController : ControllerBase
     {
         private readonly UserService _userService;
@@ -20,54 +22,66 @@ namespace Backend.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
-        public IActionResult Get([FromQuery(Name = "filter")] string filter,
+        public IActionResult AllUsers([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int page)
         {
-            return Ok(_userService.Query(filter, sort, page));
+            return Ok(_userService.Query(filter, sort, page).Select(user => new ViewUser(user)));
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult UserById(int id)
         {
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserById(id);
-            if (role == "Administrator" || user.Login == login)
-                return Ok(user);
-            else
-                return Unauthorized("Operation forbidden for this credentials");
+            if (role != "Administrator" && user.Login != login)
+                return Unauthorized("Credentials not allowed for the operation.");
+            if (user == null)
+                return NotFound("No user registered on the database with this ID");
+            return Ok(new ViewUser(user));
+
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Create([FromBody] User user)
+        public IActionResult NewUser([FromBody] User userInfo)
         {
-            _userService.CreateUser(user);
-            return Ok("User successfully created on database\n\n" + user);
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
+            User user = _userService.Query(userInfo.Login, null, null).FirstOrDefault();
+            if (user != null)
+                return Conflict("User already registered on the database with this login.");
+            user = _userService.Query(userInfo.Email, null, null).FirstOrDefault();
+            if (user != null)
+                return Conflict("User already registered on the database with this email.");
+            _userService.CreateUser(userInfo);
+            return CreatedAtAction(nameof(UserById), new { id = userInfo.Id }, new ViewUser(userInfo));
         }
 
         [HttpPut]
-        public IActionResult Update([FromBody] User userUpdate)
+        public IActionResult UpdateUser([FromBody] UpdateUser userUpdate)
         {
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-
-            if (_userService.UpdateUser(user.Id, userUpdate))
-                return Ok("User successfully updated on database\n\n" + user);
-            else
-                return BadRequest("No user with this ID on the database.");
+            if (user == null)
+                return NotFound("No user registered on the database with this ID.");
+            _userService.UpdateUser(user.Id, userUpdate);
+            return Ok(new ViewUser(user));
         }
 
         [HttpDelete]
-        public IActionResult Delete()
+        public IActionResult DeleteUser()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
-
+            if (user == null)
+                return NotFound("No user registered on the database with this ID.");
             if (_userService.DeleteUser(user.Id))
-                return Ok("User successfully deleted from database");
+                return NoContent();
             else
-                return BadRequest("There is no user with this ID on the database or it has registered orders.");
+                return UnprocessableEntity("User has registered orders, deletion is forbidden");
         }
     }
 }

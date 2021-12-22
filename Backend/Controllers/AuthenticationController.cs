@@ -1,3 +1,4 @@
+using System;
 using Backend.Models;
 using Backend.Services;
 using Backend.Models.ViewModels;
@@ -5,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
+    [ApiVersion("1.0")]
     [ApiController]
-    [Route("auth")]
+    [Route("/api/v{version:apiVersion}/login")]
     public class AuthenticationController : ControllerBase
     {
         private readonly UserService _userService;
@@ -19,11 +21,15 @@ namespace Backend.Controllers
         [HttpPost]
         public IActionResult Login(AuthUser authUser)
         {
-            if (!_userService.CheckPassword(authUser.Login, authUser.Password))
-                return BadRequest("Invalid login or password");
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
             User user = _userService.GetUserByLogin(authUser.Login);
+            if (user == null)
+                return NotFound("User not registered on the database.");
+            if (!_userService.CheckPassword(user, authUser.Password))
+                return Unauthorized("Incorrect login and/or password.");
             string token = TokenService.GenerateToken(user);
-            return Ok(token);
+            return Ok(new { token });
         }
     }
 }
