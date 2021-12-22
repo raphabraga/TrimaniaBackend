@@ -48,10 +48,7 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<GzipCompressionProvider>();
     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
 });
-builder.Services.AddDbContext<ApplicationContext>(options =>
-//options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-options.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
-new MySqlServerVersion(new Version(8, 0, 27))));
+builder.Services.AddDbContext<ApplicationContext>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
