@@ -20,7 +20,7 @@ services:
   backend:
     build: ./Backend/
     environment:
-      DB_CString: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
+      DefaultConnection: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
     ports:
       - 5001:5044
       - 5002:5045

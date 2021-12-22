@@ -26,9 +26,11 @@ namespace Backend.Controllers
             _userService = uService;
         }
 
-        [HttpGet]
+        [HttpPost]
         public IActionResult SalesReport([FromBody] ReportFilter filter)
         {
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             User user = _userService.GetUserByLogin(login);

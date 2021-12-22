@@ -40,7 +40,7 @@ builder.Services.AddApiVersioning(config =>
     config.ReportApiVersions = true;
 });
 builder.Services.AddDbContext<ApplicationContext>(options =>
-//options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+// options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 options.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
 new MySqlServerVersion(new Version(8, 0, 27))));
 builder.Services.AddScoped<UserService>();

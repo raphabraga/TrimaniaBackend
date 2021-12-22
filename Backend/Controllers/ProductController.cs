@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Backend.Models;
 using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Controllers
 {
     [ApiController]
-    [Route("products")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/products")]
     [Authorize(Roles = "Administrator")]
     public class ProductController : ControllerBase
     {
@@ -18,39 +20,59 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult GetProducts()
+        public IActionResult AllProducts()
         {
+            List<Product> products = _productService.GetProducts();
+            if (products == null)
+                return NoContent();
             return Ok(_productService.GetProducts());
         }
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public IActionResult GetProductsById(int id)
+        public IActionResult ProductsById(int id)
         {
-            return Ok(_productService.GetProductById(id));
+            Product product = _productService.GetProductById(id);
+            if (product == null)
+                return NotFound("Product not registered on the database with this ID.");
+            return Ok(product);
         }
 
         [HttpPost]
-        public IActionResult RegisterProduct([FromBody] Product product)
+        public IActionResult RegisterProduct([FromBody] Product newProduct)
         {
-            return Ok(_productService.RegisterProduct(product));
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
-        {
-            if (!_productService.DeleteProduct(id))
-                return BadRequest("There is no product registered with this ID on the database");
-            return Ok("The product was successfully deleted from the database.");
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
+            if (_productService.GetProductByName(newProduct.Name) != null)
+                return Conflict("Product already registered on the database with this name.");
+            Product product = _productService.RegisterProduct(newProduct);
+            return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
         }
 
         [HttpPut("{id}")]
         public IActionResult UpdateProduct(int id, [FromBody] Product updatedProduct)
         {
-            Product product = _productService.UpdateProduct(id, updatedProduct);
-            if (product == null)
-                return BadRequest("There is no product registered with this ID on the database");
-            return Ok("The product was successfully updated on the database.");
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
+            if (_productService.GetProductById(id) == null)
+                return NotFound("Product not registered on the database with this ID.");
+            Product product = _productService.GetProductByName(updatedProduct.Name);
+            if (product != null && product.Id != id)
+                return Conflict("Product already registered on the database with this name.");
+            product = _productService.UpdateProduct(id, updatedProduct);
+            return Ok(product);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProduct(int id)
+        {
+            if (_productService.GetProductById(id) == null)
+                return NotFound("Product not registered on the database with this ID.");
+            if (_productService.DeleteProduct(id))
+                return NoContent();
+            else
+                return UnprocessableEntity("Product belongs to registered chart items, deletion is forbidden.");
+        }
+
     }
 }

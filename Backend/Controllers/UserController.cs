@@ -34,10 +34,12 @@ namespace Backend.Controllers
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserById(id);
-            if (role == "Administrator" || user.Login == login)
-                return Ok(new ViewUser(user));
-            else
+            if (role != "Administrator" && user.Login != login)
                 return Unauthorized("Credentials not allowed for the operation.");
+            if (user == null)
+                return NotFound("No user registered on the database with this ID");
+            return Ok(new ViewUser(user));
+
         }
 
         [AllowAnonymous]
@@ -48,12 +50,12 @@ namespace Backend.Controllers
                 return BadRequest("JSON object provided is formatted wrong.");
             User user = _userService.Query(userInfo.Login, null, null).FirstOrDefault();
             if (user != null)
-                return BadRequest("User already registered on the database with this login.");
+                return Conflict("User already registered on the database with this login.");
             user = _userService.Query(userInfo.Email, null, null).FirstOrDefault();
             if (user != null)
-                return BadRequest("User already registered on the database with this email.");
+                return Conflict("User already registered on the database with this email.");
             _userService.CreateUser(userInfo);
-            return Ok(new ViewUser(userInfo));
+            return CreatedAtAction(nameof(UserById), new { id = userInfo.Id }, new ViewUser(userInfo));
         }
 
         [HttpPut]
@@ -64,7 +66,7 @@ namespace Backend.Controllers
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             if (user == null)
-                return NotFound("User not registered on the database.");
+                return NotFound("No user registered on the database with this ID.");
             _userService.UpdateUser(user.Id, userUpdate);
             return Ok(new ViewUser(user));
         }
@@ -75,11 +77,11 @@ namespace Backend.Controllers
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             if (user == null)
-                return NotFound("User not registered on the database.");
+                return NotFound("No user registered on the database with this ID.");
             if (_userService.DeleteUser(user.Id))
                 return NoContent();
             else
-                return BadRequest("User has registered orders, deletion is forbidden");
+                return UnprocessableEntity("User has registered orders, deletion is forbidden");
         }
     }
 }
