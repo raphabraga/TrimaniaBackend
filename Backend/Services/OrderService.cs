@@ -22,10 +22,20 @@ namespace Backend.Services
             _applicationContext.Database.EnsureCreated();
         }
 
-        public List<Order> GetOrders(User user)
+        public List<Order> GetOrders(User user, string sort, int? queryPage)
         {
-            return _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
+            int perPage = 5;
+            List<Order> orders = _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
             .Where(order => order.Client.Id == user.Id).ToList();
+            if (sort == "asc")
+                orders = orders.OrderBy(order => order.CreationDate).ToList();
+            else if (sort == "des")
+                orders = orders.OrderByDescending(order => order.CreationDate).ToList();
+            if (queryPage == -1)
+                return orders;
+            int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
+            orders = orders.Skip(perPage * (page - 1)).Take(perPage).ToList();
+            return orders;
         }
         public Order GetOrderById(int id)
         {
@@ -34,12 +44,12 @@ namespace Backend.Services
         }
         public Order GetOpenOrder(User user)
         {
-            return GetOrders(user).FirstOrDefault(order =>
+            return GetOrders(user, "des", -1).FirstOrDefault(order =>
             order.Status == OrderStatus.Open);
         }
         public Order GetInProgressOrder(User user)
         {
-            return GetOrders(user).FirstOrDefault(order =>
+            return GetOrders(user, "des", -1).FirstOrDefault(order =>
             order.Status == OrderStatus.InProgress);
         }
         public Order CreateOrder(User user)

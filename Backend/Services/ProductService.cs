@@ -3,6 +3,7 @@ using System.Linq;
 using Backend.Data;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Utils;
 
 namespace Backend.Services
 {
@@ -63,9 +64,19 @@ namespace Backend.Services
         {
             return _applicationContext.Products.FirstOrDefault(product => product.Id == id);
         }
-        public List<Product> GetProducts()
+        public List<Product> GetProducts(string filter, string sort, int? queryPage)
         {
-            return _applicationContext.Products.ToList();
+            int perPage = 10;
+            List<Product> products = _applicationContext.Products.ToList();
+            if (!string.IsNullOrEmpty(filter))
+                products = products.Where(product => product.Name.CaseInsensitiveContains(filter)).ToList();
+            if (sort == "asc")
+                products = products.OrderBy(product => product.Name).ToList();
+            else if (sort == "des")
+                products = products.OrderByDescending(product => product.Name).ToList();
+            int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
+            products = products.Skip(perPage * (page - 1)).Take(perPage).ToList();
+            return products;
         }
     }
 }

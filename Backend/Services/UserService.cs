@@ -6,6 +6,7 @@ using Backend.Data;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Backend.Interfaces;
+using Backend.Utils;
 
 namespace Backend.Services
 {
@@ -31,12 +32,10 @@ namespace Backend.Services
         public List<User> Query(string filter, string sort, int? queryPage)
         {
             int perPage = 10;
-            List<User> users;
+            List<User> users = _applicationContext.Users.Include(user => user.Address).ToList();
             if (!string.IsNullOrEmpty(filter))
-                users = _applicationContext.Users.Include(user => user.Address).Where(user => user.Login.Contains(filter) ||
-            user.Name.Contains(filter) || user.Email.Contains(filter)).ToList();
-            else
-                users = _applicationContext.Users.Include(user => user.Address).ToList();
+                users = users.Where(user => user.Login.CaseInsensitiveContains(filter) ||
+            user.Name.CaseInsensitiveContains(filter) || user.Email.CaseInsensitiveContains(filter)).ToList();
             if (sort == "asc")
                 users = users.OrderBy(user => user.Name).ToList();
             else if (sort == "desc")

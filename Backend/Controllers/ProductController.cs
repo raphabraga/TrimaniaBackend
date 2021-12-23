@@ -20,12 +20,13 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult AllProducts()
+        public IActionResult AllProducts([FromQuery(Name = "filter")] string filter,
+        [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = _productService.GetProducts();
+            List<Product> products = _productService.GetProducts(filter, sort, page);
             if (products == null)
-                return NoContent();
-            return Ok(_productService.GetProducts());
+                return NotFound("No registered products matches on the database.");
+            return Ok(products);
         }
 
         [AllowAnonymous]
