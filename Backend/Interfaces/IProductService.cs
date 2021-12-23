@@ -11,6 +11,6 @@ namespace Backend.Interfaces
         public abstract bool DeleteProduct(int id);
         public abstract Product GetProductByName(string name);
         public abstract Product GetProductById(int id);
-        public abstract List<Product> GetProducts();
+        public abstract List<Product> GetProducts(string filter, string sort, int? page);
     }
 }
