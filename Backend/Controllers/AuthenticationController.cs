@@ -27,22 +27,21 @@ namespace Backend.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            User user;
             try
             {
-                user = _userService.GetUserByLogin(authUser.Login);
+                User user = _userService.GetUserByLogin(authUser.Login);
+                if (user == null)
+                    return Unauthorized("Incorrect login and/or password.");
+                if (!_userService.CheckPassword(user, authUser.Password))
+                    return Unauthorized("Incorrect login and/or password.");
+                string token = _tokenService.GenerateToken(user);
+                return Ok(new { token });
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            if (user == null)
-                return Unauthorized("Incorrect login and/or password.");
-            if (!_userService.CheckPassword(user, authUser.Password))
-                return Unauthorized("Incorrect login and/or password.");
-            string token = _tokenService.GenerateToken(user);
-            return Ok(new { token });
         }
     }
 }

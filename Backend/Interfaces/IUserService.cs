@@ -11,8 +11,8 @@ namespace Backend.Interfaces
         public abstract List<User> Query(string filter, string sort, int? queryPage);
         public abstract User CreateUser(User user);
         public abstract bool CheckPassword(User user, string pwd);
-        public abstract bool DeleteUser(int id);
-        public abstract bool UpdateUser(int id, UpdateUser userUpdate);
+        public abstract void DeleteUser(int id);
+        public abstract void UpdateUser(int id, UpdateUser userUpdate);
 
     }
 }
