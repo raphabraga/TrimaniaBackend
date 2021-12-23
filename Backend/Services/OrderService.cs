@@ -60,14 +60,14 @@ namespace Backend.Services
             Product product = _productService.UpdateProductQuantity(productId, quantity);
             if (product == null)
                 return null;
-            order.TotalValue += product.Price * quantity;
+            order.TotalValue += product.Price.Value * quantity;
             ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == productId);
             if (item == null)
             {
                 item = new ChartItem
                 {
                     Product = product,
-                    Price = product.Price,
+                    Price = product.Price.Value,
                     Quantity = quantity
                 };
                 order.Items.Add(item);
