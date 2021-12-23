@@ -43,13 +43,13 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public IActionResult UserOrders()
+        public IActionResult UserOrders([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             if (user == null)
                 return NotFound("No user registered on the database with this credentials.");
-            return Ok(_orderService.GetOrders(user).Select(order => new ViewOrder(order)));
+            return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
         }
 
         [HttpGet]
