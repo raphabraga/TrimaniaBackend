@@ -71,14 +71,14 @@ namespace Backend.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest("JSON object provided is formatted wrong.");
-            if (_productService.GetProductById(request.ProductId) == null)
+            if (_productService.GetProductById(request.ProductId.Value) == null)
                 return NotFound("Product not registered on the database with this ID.");
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             Order order = _orderService.GetOpenOrder(user);
             if (order == null)
                 order = _orderService.CreateOrder(user);
-            ChartItem item = _orderService.AddToChart(order, request.ProductId, request.Quantity);
+            ChartItem item = _orderService.AddToChart(order, request.ProductId.Value, request.Quantity.Value);
             if (item == null)
                 return UnprocessableEntity("The quantity ordered exceed the number of the product in stock.");
             return Ok(item);
@@ -103,6 +103,8 @@ namespace Backend.Controllers
         [Route("checkout")]
         public IActionResult Checkout([FromBody] Payment payment)
         {
+            if (!ModelState.IsValid)
+                return BadRequest("JSON object provided is formatted wrong.");
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             Order order = _orderService.GetOpenOrder(user);

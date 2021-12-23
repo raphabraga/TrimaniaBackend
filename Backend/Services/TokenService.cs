@@ -13,7 +13,7 @@ namespace Backend.Services
         public string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            //var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
+            // var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
             var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
