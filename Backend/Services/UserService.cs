@@ -1,3 +1,4 @@
+using System;
 using BC = BCrypt.Net.BCrypt;
 using System.Linq;
 using System.Collections.Generic;
@@ -16,7 +17,14 @@ namespace Backend.Services
         public UserService(ApplicationContext context)
         {
             _applicationContext = context;
-            _applicationContext.Database.EnsureCreated();
+            try
+            {
+                _applicationContext.Database.EnsureCreated();
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+            }
         }
 
         public User GetUserById(int id)
@@ -26,7 +34,17 @@ namespace Backend.Services
 
         public User GetUserByLogin(string login)
         {
-            return _applicationContext.Users.FirstOrDefault(user => user.Login == login);
+            User user;
+            try
+            {
+                user = _applicationContext.Users.FirstOrDefault(user => user.Login == login);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                throw;
+            }
+            return user;
         }
 
         public List<User> Query(string filter, string sort, int? queryPage)

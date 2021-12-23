@@ -4,6 +4,7 @@ using Backend.Services;
 using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace Backend.Controllers
 {
@@ -25,8 +26,17 @@ namespace Backend.Controllers
         public IActionResult Login(AuthUser authUser)
         {
             if (!ModelState.IsValid)
-                return BadRequest("JSON object provided is formatted wrong.");
-            User user = _userService.GetUserByLogin(authUser.Login);
+                return BadRequest(ModelState);
+            User user;
+            try
+            {
+                user = _userService.GetUserByLogin(authUser.Login);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
             if (user == null)
                 return Unauthorized("Incorrect login and/or password.");
             if (!_userService.CheckPassword(user, authUser.Password))
