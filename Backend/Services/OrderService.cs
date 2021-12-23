@@ -142,7 +142,7 @@ namespace Backend.Services
         {
             order.Status = OrderStatus.InProgress;
             _applicationContext.SaveChanges();
-            ProcessPurchase(order, payment.PaymentMethod);
+            ProcessPurchase(order, payment.PaymentMethod.Value);
             return true;
         }
 

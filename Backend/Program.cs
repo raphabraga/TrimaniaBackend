@@ -16,8 +16,8 @@ using Backend.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
-// var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
+// var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
+var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
