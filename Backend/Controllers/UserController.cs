@@ -84,5 +84,18 @@ namespace Backend.Controllers
             else
                 return UnprocessableEntity("User has registered orders, deletion is forbidden");
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
+        public IActionResult DeleteById(int id)
+        {
+            User user = _userService.GetUserById(id);
+            if (user == null)
+                return NotFound("No user registered on the database with this ID.");
+            if (_userService.DeleteUser(user.Id))
+                return NoContent();
+            else
+                return UnprocessableEntity("User has registered orders, deletion is forbidden");
+        }
     }
 }
