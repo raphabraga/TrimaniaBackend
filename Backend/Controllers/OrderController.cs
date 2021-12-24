@@ -1,4 +1,3 @@
-using System.Net.WebSockets;
 using System;
 using System.Security.Claims;
 using System.Linq;
@@ -21,12 +20,10 @@ namespace Backend.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;
-        private readonly IProductService _productService;
-        public OrderController(IOrderService oService, IUserService uService, IProductService pService)
+        public OrderController(IOrderService oService, IUserService uService)
         {
             _orderService = oService;
             _userService = uService;
-            _productService = pService;
         }
 
         [HttpGet("{id}")]

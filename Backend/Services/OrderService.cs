@@ -15,7 +15,6 @@ namespace Backend.Services
     {
         private readonly ApplicationContext _applicationContext;
         private readonly IProductService _productService;
-
         public OrderService(ApplicationContext context, IProductService service)
         {
             _productService = service;
@@ -160,6 +159,8 @@ namespace Backend.Services
                 {
                     order.Items.Remove(item);
                     order.TotalValue -= item.Price * item.Quantity;
+                    if (order.Items.Count == 0)
+                        _applicationContext.Orders.Remove(order);
                     _productService.UpdateProductQuantity(id, -item.Quantity);
                     _applicationContext.SaveChanges();
                     return item;
