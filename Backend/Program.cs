@@ -6,7 +6,6 @@ using Backend.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -17,7 +16,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
-// var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

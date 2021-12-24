@@ -1,13 +1,14 @@
 using System;
-using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Linq;
 using Backend.Models;
-using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models.ViewModels;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using Backend.Models.Exceptions;
 
 namespace Backend.Controllers
 {
@@ -19,13 +20,10 @@ namespace Backend.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;
-        private readonly IProductService _productService;
-
-        public OrderController(IOrderService oService, IUserService uService, IProductService pService)
+        public OrderController(IOrderService oService, IUserService uService)
         {
             _orderService = oService;
             _userService = uService;
-            _productService = pService;
         }
 
         [HttpGet("{id}")]
@@ -33,23 +31,39 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOrderById(id);
-            if (order == null)
-                return NotFound("No order registered on the database with this ID.");
-            if (role != "Administrator" && order.Client.Id != user.Id)
-                return Unauthorized("Credentials not allowed for the operation.");
-            return Ok(new ViewOrder(order));
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                Order order = _orderService.GetOrderById(id);
+                if (order == null)
+                    return NotFound("No order registered on the database with this ID.");
+                if (role != "Administrator" && order.Client.Id != user.Id)
+                    return Unauthorized("Credentials not allowed for the operation.");
+                return Ok(new ViewOrder(order));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet]
         public IActionResult UserOrders([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            if (user == null)
-                return NotFound("No user registered on the database with this credentials.");
-            return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                if (user == null)
+                    return NotFound("No user registered on the database with this credentials.");
+                return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet]
@@ -57,31 +71,71 @@ namespace Backend.Controllers
         public IActionResult OpenOrder()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            if (user == null)
-                return NotFound("No user registered on the database with this credentials.");
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return NotFound("The user has no open orders.");
-            return Ok(new ViewOrder(order));
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                if (user == null)
+                    return NotFound("No user registered on the database with this credentials.");
+                Order order = _orderService.GetOpenOrder(user);
+                if (order == null)
+                    return NotFound("The user has no open orders.");
+                return Ok(new ViewOrder(order));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        [Route("in-progress")]
+        public IActionResult InProgressOrder()
+        {
+            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                if (user == null)
+                    return NotFound("No user registered on the database with this credentials.");
+                List<Order> orders = _orderService.GetInProgressOrders(user);
+                if (orders == null)
+                    return NotFound("The user has no orders in progress.");
+                return Ok(orders.Select(order => new ViewOrder(order)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
         public IActionResult AddProductToChart([FromBody] AddToChartRequest request)
         {
             if (!ModelState.IsValid)
-                return BadRequest("JSON object provided is formatted wrong.");
-            if (_productService.GetProductById(request.ProductId.Value) == null)
-                return NotFound("Product not registered on the database with this ID.");
+                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                order = _orderService.CreateOrder(user);
-            ChartItem item = _orderService.AddToChart(order, request.ProductId.Value, request.Quantity.Value);
-            if (item == null)
-                return UnprocessableEntity("The quantity ordered exceed the number of the product in stock.");
-            return Ok(item);
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                return Ok(_orderService.AddToChart(user, request));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (OutOfStockException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
         }
 
         [HttpPut]
@@ -89,14 +143,21 @@ namespace Backend.Controllers
         public IActionResult Cancel()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return UnprocessableEntity("There is no open order to be cancelled.");
-            if (_orderService.CancelOrder(order))
-                return Ok("The order was successfully cancelled");
-            else
-                return BadRequest("Unable to cancel this order.");
+            try
+            {
+                User user = _userService.GetUserByLogin(login);
+                return Ok(new ViewOrder(_orderService.CancelOrder(user)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
         }
 
         [HttpPut]
@@ -104,60 +165,98 @@ namespace Backend.Controllers
         public IActionResult Checkout([FromBody] Payment payment)
         {
             if (!ModelState.IsValid)
-                return BadRequest("JSON object provided is formatted wrong.");
-            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return NotFound("There is no open order in order to checkout a purchase.");
-            if (_orderService.CheckoutOrder(order, payment))
-                return Ok("The order was successfully completed");
-            else
-                return UnprocessableEntity("The chart is empty. Unable to checkout a purchase.");
+                return BadRequest(ModelState);
+            try
+            {
+                string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+                User user = _userService.GetUserByLogin(login);
+                return Ok(new ViewOrder(_orderService.CheckoutOrder(user, payment)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
         }
 
         [HttpPut("remove-item/{id}")]
         public IActionResult RemoveProductFromChart(int id)
         {
-            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return NotFound("There is no open order in order to remove items from chart.");
-            if (_orderService.RemoveFromChart(order, id))
-                return Ok("Product was successfully removed from the chart");
-            else
-                return UnprocessableEntity("This item doesn't exist in the cart. Unable to remove it");
+            try
+            {
+                string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+                User user = _userService.GetUserByLogin(login);
+                return Ok(_orderService.RemoveFromChart(user, id));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
         }
 
         [Route("increase-item/{id}")]
         [HttpPut]
         public IActionResult IncreaseItemQuantity(int id)
         {
-            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return NotFound("There is no open order in order to modify items from chart.");
-            if (_orderService.ChangeItemQuantity(order, id, "Increase"))
-                return Ok("The quantity of the product was successfully changed");
-            else
-                return UnprocessableEntity("This item doesn't exist in the cart. Unable to modify it");
+            try
+            {
+                string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+                User user = _userService.GetUserByLogin(login);
+                return Ok(_orderService.ChangeItemQuantity(user, id, "Increase"));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (OutOfStockException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
         }
 
         [Route("decrease-item/{id}")]
         [HttpPut]
         public IActionResult DecreaseItemQuantity(int id)
         {
-            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOpenOrder(user);
-            if (order == null)
-                return NotFound("There is no open order in order to modify items from chart.");
-            if (_orderService.ChangeItemQuantity(order, id, "Decrease"))
-                return Ok("The quantity of the product was successfully changed");
-            else
-                return UnprocessableEntity("This item doesn't exist in the cart. Unable to modify it");
+            try
+            {
+                string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+                User user = _userService.GetUserByLogin(login);
+                return Ok(_orderService.ChangeItemQuantity(user, id, "decrease"));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (OutOfStockException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
         }
     }
 }

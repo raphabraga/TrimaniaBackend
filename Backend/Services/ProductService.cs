@@ -103,12 +103,19 @@ namespace Backend.Services
 
         public Product UpdateProductQuantity(int id, int amount)
         {
-            Product product = GetProductById(id);
-            if (product.StockQuantity < amount)
-                return null;
-            product.StockQuantity -= amount;
-            _applicationContext.SaveChanges();
-            return product;
+            try
+            {
+                Product product = GetProductById(id);
+                if (product.StockQuantity < amount)
+                    throw new OutOfStockException("The quantity ordered exceed the number of the product in stock");
+                product.StockQuantity -= amount;
+                _applicationContext.SaveChanges();
+                return product;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
         public void DeleteProduct(int id)

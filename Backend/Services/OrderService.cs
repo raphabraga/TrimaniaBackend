@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models.ViewModels;
 using Backend.Interfaces;
+using Backend.Models.Exceptions;
 
 namespace Backend.Services
 {
@@ -14,152 +15,252 @@ namespace Backend.Services
     {
         private readonly ApplicationContext _applicationContext;
         private readonly IProductService _productService;
-
         public OrderService(ApplicationContext context, IProductService service)
         {
             _productService = service;
             _applicationContext = context;
-            _applicationContext.Database.EnsureCreated();
+            try
+            {
+                _applicationContext.Database.EnsureCreated();
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+            }
         }
 
         public List<Order> GetOrders(User user, string sort, int? queryPage)
         {
             int perPage = 5;
-            List<Order> orders = _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
-            .Where(order => order.Client.Id == user.Id).ToList();
-            if (sort == "asc")
-                orders = orders.OrderBy(order => order.CreationDate).ToList();
-            else if (sort == "des")
-                orders = orders.OrderByDescending(order => order.CreationDate).ToList();
-            if (queryPage == -1)
+            try
+            {
+                List<Order> orders = _applicationContext.Orders.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product)
+                .Where(order => order.Client.Id == user.Id).ToList();
+                if (sort == "asc")
+                    orders = orders.OrderBy(order => order.CreationDate).ToList();
+                else if (sort == "desc")
+                    orders = orders.OrderByDescending(order => order.CreationDate).ToList();
+                if (queryPage == -1)
+                    return orders;
+                int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
+                orders = orders.Skip(perPage * (page - 1)).Take(perPage).ToList();
                 return orders;
-            int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
-            orders = orders.Skip(perPage * (page - 1)).Take(perPage).ToList();
-            return orders;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
         public Order GetOrderById(int id)
         {
-            return _applicationContext.Orders.Include(order => order.Items).ThenInclude(item => item.Product)
-            .FirstOrDefault(order => order.Id == id);
+            try
+            {
+                return _applicationContext.Orders.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product)
+                .FirstOrDefault(order => order.Id == id);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
         public Order GetOpenOrder(User user)
         {
-            return GetOrders(user, "des", -1).FirstOrDefault(order =>
-            order.Status == OrderStatus.Open);
+            try
+            {
+                return GetOrders(user, "desc", -1).FirstOrDefault(order =>
+                order.Status == OrderStatus.Open);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
-        public Order GetInProgressOrder(User user)
+        public List<Order> GetInProgressOrders(User user)
         {
-            return GetOrders(user, "des", -1).FirstOrDefault(order =>
-            order.Status == OrderStatus.InProgress);
+            try
+            {
+                return GetOrders(user, "desc", -1).Where(order =>
+                order.Status == OrderStatus.InProgress).ToList();
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
         public Order CreateOrder(User user)
         {
-            Order order = new Order()
+            try
             {
-                Client = user,
-                Status = OrderStatus.Open,
-                CreationDate = DateTime.Now,
-                Items = new List<ChartItem>()
-            };
-            _applicationContext.Orders.Add(order);
-            _applicationContext.SaveChanges();
-            return order;
-        }
-        public ChartItem AddToChart(Order order, int productId, int quantity)
-        {
-            Product product = _productService.UpdateProductQuantity(productId, quantity);
-            if (product == null)
-                return null;
-            order.TotalValue += product.Price.Value * quantity;
-            ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == productId);
-            if (item == null)
-            {
-                item = new ChartItem
+                Order order = new Order()
                 {
-                    Product = product,
-                    Price = product.Price.Value,
-                    Quantity = quantity
+                    Client = user,
+                    Status = OrderStatus.Open,
+                    CreationDate = DateTime.Now,
+                    Items = new List<ChartItem>()
                 };
-                order.Items.Add(item);
-            }
-            else
-                item.Quantity += quantity;
-            _applicationContext.Update(order);
-            _applicationContext.SaveChanges();
-            return item;
-        }
-
-        public bool RemoveFromChart(Order order, int id)
-        {
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
-            if (item == null)
-                return false;
-            else
-            {
-                order.Items.Remove(item);
-                order.TotalValue -= item.Price * item.Quantity;
-                _productService.UpdateProductQuantity(id, -item.Quantity);
+                _applicationContext.Orders.Add(order);
                 _applicationContext.SaveChanges();
-                return true;
+                return order;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
         }
-
-        public bool ChangeItemQuantity(Order order, int id, string sign)
+        public ChartItem AddToChart(User user, AddToChartRequest request)
         {
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
-            if (item == null)
-                return false;
-            else
+            try
             {
-                if (sign == "Increase")
+                if (_productService.GetProductById(request.ProductId.Value) == null)
+                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
+                Order order = GetOpenOrder(user);
+                if (order == null)
+                    order = CreateOrder(user);
+                Product product = _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
+                order.TotalValue += product.Price.Value * request.Quantity.Value;
+                ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == request.ProductId.Value);
+                if (item == null)
                 {
-                    if (_productService.GetProductById(id).StockQuantity > 1)
+                    item = new ChartItem
                     {
-                        item.Quantity++;
-                        order.TotalValue += item.Price;
-                        _productService.UpdateProductQuantity(id, 1);
-                    }
-                    else
-                        return false;
+                        Product = product,
+                        Price = product.Price.Value,
+                        Quantity = request.Quantity.Value
+                    };
+                    order.Items.Add(item);
                 }
                 else
-                {
-                    if (item.Quantity < 1)
-                        return false;
-                    if (item.Quantity == 1)
-                        RemoveFromChart(order, id);
-                    item.Quantity--;
-                    order.TotalValue -= item.Price;
-                    _productService.UpdateProductQuantity(id, -1);
-                }
+                    item.Quantity += request.Quantity.Value;
+                _applicationContext.Update(order);
                 _applicationContext.SaveChanges();
-                return true;
+                return item;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (OutOfStockException)
+            {
+                throw;
             }
         }
-        public bool CancelOrder(Order order)
+
+        public ChartItem RemoveFromChart(User user, int id)
         {
-            order.Status = OrderStatus.Cancelled;
-            order.CancellationDate = DateTime.Now;
-            order.Items.ForEach(item =>
+            try
             {
-                _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
-            });
-            _applicationContext.SaveChanges();
-            return true;
+                Order order = GetOpenOrder(user);
+                if (order == null)
+                    throw new RegisterNotFoundException("There is no items in the chart in order to remove from it.");
+                ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
+                if (item == null)
+                    throw new RegisterNotFoundException("This item doesn't exist in the cart. Unable to remove it");
+                else
+                {
+                    order.Items.Remove(item);
+                    order.TotalValue -= item.Price * item.Quantity;
+                    if (order.Items.Count == 0)
+                        _applicationContext.Orders.Remove(order);
+                    _productService.UpdateProductQuantity(id, -item.Quantity);
+                    _applicationContext.SaveChanges();
+                    return item;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
-        public bool CheckoutOrder(Order order, Payment payment)
+        public ChartItem ChangeItemQuantity(User user, int id, string sign)
         {
-            order.Status = OrderStatus.InProgress;
-            _applicationContext.SaveChanges();
-            ProcessPurchase(order, payment.PaymentMethod.Value);
-            return true;
+            try
+            {
+                Order order = GetOpenOrder(user);
+                if (order == null)
+                    throw new RegisterNotFoundException("There is no items in the chart in order to change its quantity.");
+                ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
+                if (item == null)
+                    throw new RegisterNotFoundException("This item doesn't exist in the cart. Unable to change quantity");
+                else
+                {
+                    if (sign == "Increase")
+                    {
+                        _productService.UpdateProductQuantity(id, 1);
+                        item.Quantity++;
+                        order.TotalValue += item.Price;
+                    }
+                    else
+                    {
+                        if (item.Quantity == 1)
+                        {
+                            RemoveFromChart(user, id);
+                            item.Quantity--;
+                        }
+                        else
+                        {
+                            item.Quantity--;
+                            order.TotalValue -= item.Price;
+                            _productService.UpdateProductQuantity(id, -1);
+                        }
+                    }
+                    _applicationContext.SaveChanges();
+                    return item;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (OutOfStockException)
+            {
+                throw;
+            }
+        }
+        public Order CancelOrder(User user)
+        {
+            try
+            {
+                Order order = GetOpenOrder(user);
+                if (order == null)
+                    throw new RegisterNotFoundException("There is no open order to be cancelled.");
+                order.Status = OrderStatus.Cancelled;
+                order.CancellationDate = DateTime.Now;
+                order.Items.ForEach(item =>
+                {
+                    _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
+                });
+                _applicationContext.SaveChanges();
+                return order;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
-        public void ProcessPurchase(Order order, PaymentMethod payment)
+        public Order CheckoutOrder(User user, Payment payment)
+        {
+            try
+            {
+                Order order = GetOpenOrder(user);
+                if (order == null)
+                    throw new RegisterNotFoundException("The chart is empty. Unable to checkout.");
+                order.Status = OrderStatus.InProgress;
+                _applicationContext.SaveChanges();
+                ProcessPurchase(order, payment);
+                return order;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+        }
+
+        public void ProcessPurchase(Order order, Payment payment)
         {
             int processingTime = 0;
-            switch (payment)
+            switch (payment.PaymentMethod)
             {
                 case PaymentMethod.InCash:
                     processingTime = 0; // instant processing
@@ -173,11 +274,18 @@ namespace Backend.Services
             }
             Task.Delay(processingTime).ContinueWith(_ =>
             {
-                using var context = new ApplicationContext();
-                order.Status = OrderStatus.Finished;
-                order.FinishingDate = DateTime.Now;
-                context.Update(order);
-                context.SaveChanges();
+                try
+                {
+                    using var context = new ApplicationContext();
+                    order.Status = OrderStatus.Finished;
+                    order.FinishingDate = DateTime.Now;
+                    context.Update(order);
+                    context.SaveChanges();
+                }
+                catch (InvalidOperationException)
+                {
+                    throw;
+                }
             });
         }
     }
