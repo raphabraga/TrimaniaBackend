@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Models.ViewModels;
 using Backend.Interfaces;
 using Backend.Models.Exceptions;
+using Backend.Utils;
+using Backend.Models.Enums;
 
 namespace Backend.Services
 {
@@ -112,7 +114,7 @@ namespace Backend.Services
             try
             {
                 if (_productService.GetProductById(request.ProductId.Value) == null)
-                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
                 Order order = GetOpenOrder(user);
                 if (order == null)
                     order = CreateOrder(user);
@@ -151,10 +153,10 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException("There is no items in the chart in order to remove from it.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.RemoveItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
                 if (item == null)
-                    throw new RegisterNotFoundException("This item doesn't exist in the cart. Unable to remove it");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
                 else
                 {
                     order.Items.Remove(item);
@@ -178,10 +180,10 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException("There is no items in the chart in order to change its quantity.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ChangeItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
                 if (item == null)
-                    throw new RegisterNotFoundException("This item doesn't exist in the cart. Unable to change quantity");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ChangeItemNotInChart));
                 else
                 {
                     if (sign == "Increase")
@@ -223,7 +225,7 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException("There is no open order to be cancelled.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CancelEmptyChart));
                 order.Status = OrderStatus.Cancelled;
                 order.CancellationDate = DateTime.Now;
                 order.Items.ForEach(item =>
@@ -245,7 +247,7 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException("The chart is empty. Unable to checkout.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CheckoutEmptyChart));
                 order.Status = OrderStatus.InProgress;
                 _applicationContext.SaveChanges();
                 ProcessPurchase(order, payment);

@@ -4,6 +4,7 @@ using System.Linq;
 using Backend.Data;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Models.Enums;
 using Backend.Models.Exceptions;
 using Backend.Models.ViewModels;
 using Backend.Utils;
@@ -69,7 +70,7 @@ namespace Backend.Services
             try
             {
                 if (GetProductByName(product.Name) != null)
-                    throw new RegisteredProductException("Product already registered on the database with this name.");
+                    throw new RegisteredProductException(ErrorMessage.GetMessage(ErrorType.UniqueProductName));
                 _applicationContext.Products.Add(product);
                 _applicationContext.SaveChanges();
                 return product;
@@ -86,7 +87,7 @@ namespace Backend.Services
             {
                 Product product = GetProductByName(updateProduct.Name);
                 if (product != null && product.Id != id)
-                    throw new RegisteredProductException("Product already registered on the database with this name.");
+                    throw new RegisteredProductException(ErrorMessage.GetMessage(ErrorType.UniqueProductName));
                 product = GetProductById(id);
                 product.Name = string.IsNullOrEmpty(updateProduct.Name) ? product.Name : updateProduct.Name;
                 product.Price = updateProduct.Price == null ? product.Price : updateProduct.Price.Value;
@@ -107,7 +108,7 @@ namespace Backend.Services
             {
                 Product product = GetProductById(id);
                 if (product.StockQuantity < amount)
-                    throw new OutOfStockException("The quantity ordered exceed the number of the product in stock");
+                    throw new OutOfStockException(ErrorMessage.GetMessage(ErrorType.InsufficientProductInStock));
                 product.StockQuantity -= amount;
                 _applicationContext.SaveChanges();
                 return product;
@@ -124,7 +125,7 @@ namespace Backend.Services
             {
                 Product product = GetProductById(id);
                 if (_applicationContext.Items.Any(item => item.Product.Id == id))
-                    throw new NotAllowedDeletionException("Product belongs to one or more registered chart items. Deletion is forbidden");
+                    throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
                 _applicationContext.Remove(product);
                 _applicationContext.SaveChanges();
             }

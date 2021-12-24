@@ -8,6 +8,8 @@ using Backend.Models.ViewModels;
 using Backend.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Backend.Models.Exceptions;
+using Backend.Models.Enums;
+using Backend.Utils;
 
 namespace Backend.Controllers
 {
@@ -48,7 +50,7 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserById(id);
                 if (role != "Administrator" && user?.Login != login)
-                    throw new UnauthorizedAccessException("Credentials not allowed for the operation.");
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
                 return Ok(new ViewUser(user));
             }
             catch (InvalidOperationException e)
@@ -101,7 +103,7 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
             }
             catch (InvalidOperationException e)
@@ -124,7 +126,7 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 _userService.DeleteUser(user.Id);
                 return NoContent();
             }

@@ -9,6 +9,7 @@ using Backend.Models.ViewModels;
 using Backend.Interfaces;
 using Backend.Utils;
 using Backend.Models.Exceptions;
+using Backend.Models.Enums;
 
 namespace Backend.Services
 {
@@ -36,7 +37,7 @@ namespace Backend.Services
             {
                 User user = _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this ID");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 return user;
             }
             catch (InvalidOperationException)
@@ -89,11 +90,11 @@ namespace Backend.Services
             {
                 var exceptions = new List<Exception>();
                 if (_applicationContext.Users.Any(u => u.Login == user.Login))
-                    exceptions.Add(new UsedLoginException("User already registered on the database with this login."));
+                    exceptions.Add(new UsedLoginException(ErrorMessage.GetMessage(ErrorType.UniqueUserName)));
                 if (_applicationContext.Users.Any(u => u.Email == user.Email))
-                    exceptions.Add(new UsedEmailException("User already registered on the database with this email."));
+                    exceptions.Add(new UsedEmailException(ErrorMessage.GetMessage(ErrorType.UniqueUserEmail)));
                 if (_applicationContext.Users.Any(u => u.Cpf == user.Cpf))
-                    exceptions.Add(new UsedCpfException("User already registered on the database with this CPF."));
+                    exceptions.Add(new UsedCpfException(ErrorMessage.GetMessage(ErrorType.UniqueUserCpf)));
                 if (exceptions.Count > 0)
                     throw new AggregateException(exceptions);
                 _applicationContext.Users.Add(user);
@@ -112,9 +113,9 @@ namespace Backend.Services
             {
                 User user = GetUserByLogin(authUser.Login);
                 if (user == null)
-                    throw new UnauthorizedAccessException("Incorrect login and/or password.");
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.IncorrectLoginOrPassword));
                 if (!BC.Verify(authUser.Password, user.Password))
-                    throw new UnauthorizedAccessException("Incorrect login and/or password.");
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.IncorrectLoginOrPassword));
                 return _tokenService.GenerateToken(user);
             }
             catch (InvalidOperationException)
@@ -129,9 +130,9 @@ namespace Backend.Services
             {
                 User user = GetUserById(id);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 if (_applicationContext.Orders.Any(order => order.Client.Id == id))
-                    throw new NotAllowedDeletionException("User has registered orders. Deletion is forbidden");
+                    throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteUserWithRegisteredOrder));
                 else
                 {
                     _applicationContext.Users.Remove(user);
