@@ -125,8 +125,10 @@ BEGIN
     DECLARE v_rep int unsigned default 50;
     DECLARE v_ite int unsigned default 1;
     DECLARE v_name varchar(100) default '';
+    DECLARE v_login varchar(100) default '';
     WHILE v_ite < v_rep DO
         SET v_name = Lipsum(1, NULL, NULL);
+        SET v_login = CONCAT(LOWER(v_name), RandNumber(3));
         INSERT INTO Addresses
             SET Number = RandNumber(3),
             Street = CONCAT('Rua', ' ', Lipsum(2, 1, NULL)),
@@ -135,10 +137,10 @@ BEGIN
             State = Lipsum(1, NULL, NULL);
         INSERT INTO Users
             SET Name = v_name,
-            Login = CONCAT(LOWER(v_name), RandNumber(3)),
+            Login = v_login,
             Password = RandString(16),
             Cpf = RandNumber(11),
-            Email = CONCAT(LOWER(v_name), '@mail.com'),
+            Email = CONCAT(v_login, '@mail.com'),
             Birthday = CURRENT_DATE - INTERVAL 25 YEAR - INTERVAL FLOOR(RAND() * 5000) DAY,
             AddressId = LAST_INSERT_ID(),
             CreationDate = CURRENT_DATE - INTERVAL FLOOR(RAND() * 5000) DAY;
@@ -185,7 +187,7 @@ BEGIN
         SET v_status = ROUND(RAND() + 2);
         IF v_status = 2 THEN
             INSERT INTO Orders
-                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
+                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 1),
                 CreationDate = v_cdate,
                 Status = v_status,
                 TotalValue = 0,
@@ -193,7 +195,7 @@ BEGIN
                 FinishingDate = NULL;
         ELSE 
             INSERT INTO Orders
-                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 3),
+                SET ClientId = FLOOR(((v_quantity - 1) * RAND()) + 1),
                 CreationDate = v_cdate,
                 Status = v_status,
                 TotalValue = 0,

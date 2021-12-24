@@ -118,7 +118,7 @@ namespace Backend.Services
                 User user = GetUserById(id);
                 bool hasRegisteredOrders = _applicationContext.Orders.Any(order => order.Client.Id == id);
                 if (hasRegisteredOrders)
-                    throw new NotAllowedDeletionException("User has registered orders, deletion is forbidden");
+                    throw new NotAllowedDeletionException("User has registered orders. Deletion is forbidden");
                 else
                 {
                     _applicationContext.Users.Remove(user);
@@ -135,7 +135,7 @@ namespace Backend.Services
             }
         }
 
-        public void UpdateUser(int id, UpdateUser userUpdate)
+        public User UpdateUser(int id, UpdateUser userUpdate)
         {
             try
             {
@@ -146,24 +146,29 @@ namespace Backend.Services
                 user.Birthday = (userUpdate.Birthday == null) ? user.Birthday : userUpdate.Birthday;
                 if (user.Address == null)
                 {
-                    user.Address = new Address
-                    {
-                        State = userUpdate?.Address?.State,
-                        City = userUpdate?.Address?.City,
-                        Neighborhood = userUpdate?.Address.Neighborhood,
-                        Street = userUpdate?.Address?.Street,
-                        Number = userUpdate?.Address?.Number
-                    };
+                    if (userUpdate.Address != null)
+                        user.Address = new Address
+                        {
+                            State = userUpdate?.Address?.State,
+                            City = userUpdate?.Address?.City,
+                            Neighborhood = userUpdate?.Address?.Neighborhood,
+                            Street = userUpdate?.Address?.Street,
+                            Number = userUpdate?.Address?.Number
+                        };
                 }
                 else
                 {
-                    user.Address.State = (userUpdate?.Address?.State == null) ? user?.Address?.State : userUpdate?.Address?.State;
-                    user.Address.City = (userUpdate?.Address?.City == null) ? user?.Address?.City : userUpdate?.Address?.City;
-                    user.Address.Neighborhood = (userUpdate?.Address?.Neighborhood == null) ? user?.Address?.Neighborhood : userUpdate?.Address?.Neighborhood;
-                    user.Address.Street = (userUpdate?.Address?.Street == null) ? user?.Address?.Street : userUpdate?.Address?.Street;
-                    user.Address.Number = (userUpdate?.Address?.Number == null) ? user?.Address?.Number : userUpdate?.Address?.Number;
+                    if (userUpdate.Address != null)
+                    {
+                        user.Address.State = (userUpdate?.Address?.State == null) ? user?.Address?.State : userUpdate?.Address?.State;
+                        user.Address.City = (userUpdate?.Address?.City == null) ? user?.Address?.City : userUpdate?.Address?.City;
+                        user.Address.Neighborhood = (userUpdate?.Address?.Neighborhood == null) ? user?.Address?.Neighborhood : userUpdate?.Address?.Neighborhood;
+                        user.Address.Street = (userUpdate?.Address?.Street == null) ? user?.Address?.Street : userUpdate?.Address?.Street;
+                        user.Address.Number = (userUpdate?.Address?.Number == null) ? user?.Address?.Number : userUpdate?.Address?.Number;
+                    }
                 }
                 _applicationContext.SaveChanges();
+                return user;
             }
             catch (InvalidOperationException)
             {

@@ -33,6 +33,7 @@ namespace Backend.Models
         ErrorMessage = "CPF must follow one of the following pattern: 123.456.789-10 or 12345678910")]
         public string Cpf { get; set; }
 
+        [Required(ErrorMessage = "Email attribute is mandatory")]
         [EmailAddress(ErrorMessage = "Valid e-mail must be provided.")]
         public string Email { get; set; }
 

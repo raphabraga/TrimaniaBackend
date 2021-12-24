@@ -4,6 +4,8 @@ using System.Linq;
 using Backend.Data;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Models.Exceptions;
+using Backend.Models.ViewModels;
 using Backend.Utils;
 
 namespace Backend.Services
@@ -64,20 +66,39 @@ namespace Backend.Services
         }
         public Product RegisterProduct(Product product)
         {
-            _applicationContext.Products.Add(product);
-            _applicationContext.SaveChanges();
-            return product;
+            try
+            {
+                if (GetProductByName(product.Name) != null)
+                    throw new RegisteredProductException("Product already registered on the database with this name.");
+                _applicationContext.Products.Add(product);
+                _applicationContext.SaveChanges();
+                return product;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
-        public Product UpdateProduct(int id, Product updatedProduct)
+        public Product UpdateProduct(int id, UpdateProduct updateProduct)
         {
-            Product product = GetProductById(id);
-            product.Name = updatedProduct.Name;
-            product.Price = updatedProduct.Price;
-            product.StockQuantity = updatedProduct.StockQuantity;
-            product.Description = updatedProduct.Description;
-            _applicationContext.SaveChanges();
-            return product;
+            try
+            {
+                Product product = GetProductByName(updateProduct.Name);
+                if (product != null && product.Id != id)
+                    throw new RegisteredProductException("Product already registered on the database with this name.");
+                product = GetProductById(id);
+                product.Name = string.IsNullOrEmpty(updateProduct.Name) ? product.Name : updateProduct.Name;
+                product.Price = updateProduct.Price == null ? product.Price : updateProduct.Price.Value;
+                product.StockQuantity = updateProduct.StockQuantity == null ? product.StockQuantity : updateProduct.StockQuantity;
+                product.Description = updateProduct.Description == null ? product.Description : updateProduct.Description;
+                _applicationContext.SaveChanges();
+                return product;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
         public Product UpdateProductQuantity(int id, int amount)
@@ -90,14 +111,20 @@ namespace Backend.Services
             return product;
         }
 
-        public bool DeleteProduct(int id)
+        public void DeleteProduct(int id)
         {
-            Product product = GetProductById(id);
-            if (_applicationContext.Items.Any(item => item.Product.Id == id))
-                return false;
-            _applicationContext.Remove(product);
-            _applicationContext.SaveChanges();
-            return true;
+            try
+            {
+                Product product = GetProductById(id);
+                if (_applicationContext.Items.Any(item => item.Product.Id == id))
+                    throw new NotAllowedDeletionException("Product belongs to one or more registered chart items. Deletion is forbidden");
+                _applicationContext.Remove(product);
+                _applicationContext.SaveChanges();
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
     }
 }

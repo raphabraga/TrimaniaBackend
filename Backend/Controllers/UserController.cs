@@ -95,8 +95,7 @@ namespace Backend.Controllers
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
                     return NotFound("No user registered on the database with this ID.");
-                _userService.UpdateUser(user.Id, userUpdate);
-                return Ok(new ViewUser(user));
+                return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
             }
             catch (InvalidOperationException e)
             {
