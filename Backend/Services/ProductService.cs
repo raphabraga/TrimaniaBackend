@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Backend.Data;
@@ -14,9 +15,53 @@ namespace Backend.Services
         public ProductService(ApplicationContext context)
         {
             _applicationContext = context;
-            _applicationContext.Database.EnsureCreated();
+            try
+            {
+                _applicationContext.Database.EnsureCreated();
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+            }
         }
 
+        public Product GetProductByName(string name)
+        {
+            try
+            {
+                return _applicationContext.Products.FirstOrDefault(product => product.Name == name);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+        }
+
+        public Product GetProductById(int id)
+        {
+            return _applicationContext.Products.FirstOrDefault(product => product.Id == id);
+        }
+        public List<Product> GetProducts(string filter, string sort, int? queryPage)
+        {
+            int perPage = 10;
+            try
+            {
+                List<Product> products = _applicationContext.Products.ToList();
+                if (!string.IsNullOrEmpty(filter))
+                    products = products.Where(product => product.Name.CaseInsensitiveContains(filter)).ToList();
+                if (sort == "asc")
+                    products = products.OrderBy(product => product.Name).ToList();
+                else if (sort == "des")
+                    products = products.OrderByDescending(product => product.Name).ToList();
+                int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
+                products = products.Skip(perPage * (page - 1)).Take(perPage).ToList();
+                return products;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+        }
         public Product RegisterProduct(Product product)
         {
             _applicationContext.Products.Add(product);
@@ -53,30 +98,6 @@ namespace Backend.Services
             _applicationContext.Remove(product);
             _applicationContext.SaveChanges();
             return true;
-        }
-
-        public Product GetProductByName(string name)
-        {
-            return _applicationContext.Products.FirstOrDefault(product => product.Name == name);
-        }
-
-        public Product GetProductById(int id)
-        {
-            return _applicationContext.Products.FirstOrDefault(product => product.Id == id);
-        }
-        public List<Product> GetProducts(string filter, string sort, int? queryPage)
-        {
-            int perPage = 10;
-            List<Product> products = _applicationContext.Products.ToList();
-            if (!string.IsNullOrEmpty(filter))
-                products = products.Where(product => product.Name.CaseInsensitiveContains(filter)).ToList();
-            if (sort == "asc")
-                products = products.OrderBy(product => product.Name).ToList();
-            else if (sort == "des")
-                products = products.OrderByDescending(product => product.Name).ToList();
-            int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
-            products = products.Skip(perPage * (page - 1)).Take(perPage).ToList();
-            return products;
         }
     }
 }

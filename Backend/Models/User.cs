@@ -28,7 +28,7 @@ namespace Backend.Models
         ErrorMessage = "Password must have at least eight characters, at least one letter, one number and one special character")]
         public string Password { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "CPF attribute is mandatory")]
         [RegularExpression(@"^(([0-9]{3}.[0-9]{3}.[0-9]{3}-[0-9]{2})|([0-9]{11}))$",
         ErrorMessage = "CPF must follow one of the following pattern: 123.456.789-10 or 12345678910")]
         public string Cpf { get; set; }

@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using Backend.Interfaces;
 using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -23,20 +25,36 @@ namespace Backend.Controllers
         public IActionResult AllProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = _productService.GetProducts(filter, sort, page);
-            if (products == null)
-                return NotFound("No registered products matches on the database.");
-            return Ok(products);
+            try
+            {
+                List<Product> products = _productService.GetProducts(filter, sort, page);
+                if (products == null)
+                    return NotFound("No registered products matches on the database.");
+                return Ok(products);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult ProductsById(int id)
         {
-            Product product = _productService.GetProductById(id);
-            if (product == null)
-                return NotFound("Product not registered on the database with this ID.");
-            return Ok(product);
+            try
+            {
+                Product product = _productService.GetProductById(id);
+                if (product == null)
+                    return NotFound("Product not registered on the database with this ID.");
+                return Ok(product);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]

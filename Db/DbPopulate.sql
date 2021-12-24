@@ -112,27 +112,12 @@ INSERT INTO Addresses
     INSERT INTO Users
         SET Name = 'Administrator',
         Login = 'admin',
-        Password = "$2a$11$AKauRXOrS7FOlMidLlCETeGsoNj/8iX0aB44yrmlhrzVZf0yfYL3q",
+        Password = "$2a$11$47O23iczxidkRRDQ9tbgXOMynRWnjO1kaaO5mkC4FWaiVnF4oaNN.",
         Cpf = '24.374.575/0001-32',
         Email = 'admin@trilogo.com.br',
         Birthday = '2016-03-09',
         AddressId = LAST_INSERT_ID(),
         CreationDate = '2016-03-09';
-INSERT INTO Addresses
-        SET Number = '123',
-        Street = 'Av. Antonio Sales',
-        Neighborhood = 'Dionisio Torres',
-        City = 'Fortaleza',
-        State = 'Ceará';
-    INSERT INTO Users
-        SET Name = 'Jose Silva',
-        Login = 'jsilva',
-        Password = "$2a$11$XV.wYx0hB8gzU7c5l950muJJii9I37QIsCjlsnbwUZw9/TWeCs/EW",
-        Cpf = '12345678901',
-        Email = 'jsilva@mail.com.br',
-        Birthday = '1987-05-19',
-        AddressId = LAST_INSERT_ID(),
-        CreationDate = '2018-01-22';
 
 DELIMITER //
 CREATE PROCEDURE PopulateUsers()
