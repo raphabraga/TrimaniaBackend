@@ -31,13 +31,18 @@ namespace Backend.Controllers
             {
                 List<Product> products = _productService.GetProducts(filter, sort, page);
                 if (products == null)
-                    return NotFound("No registered products matches on the database.");
+                    throw new RegisterNotFoundException("No registered products matches on the database.");
                 return Ok(products);
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -49,13 +54,18 @@ namespace Backend.Controllers
             {
                 Product product = _productService.GetProductById(id);
                 if (product == null)
-                    return NotFound("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
                 return Ok(product);
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -89,7 +99,7 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    return NotFound("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
                 return Ok(_productService.UpdateProduct(id, updatedProduct));
             }
             catch (InvalidOperationException e)
@@ -102,6 +112,11 @@ namespace Backend.Controllers
                 System.Console.WriteLine(e.Message);
                 return UnprocessableEntity(e.Message);
             }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
         }
 
         [HttpDelete("{id}")]
@@ -110,7 +125,7 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    return NotFound("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
                 _productService.DeleteProduct(id);
                 return NoContent();
             }
@@ -123,6 +138,11 @@ namespace Backend.Controllers
             {
                 System.Console.WriteLine(e.Message);
                 return UnprocessableEntity(e.Message);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
