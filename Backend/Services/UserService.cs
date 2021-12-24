@@ -34,7 +34,10 @@ namespace Backend.Services
         {
             try
             {
-                return _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
+                User user = _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
+                if (user == null)
+                    throw new RegisterNotFoundException("No user registered on the database with this ID");
+                return user;
             }
             catch (InvalidOperationException)
             {
@@ -125,8 +128,9 @@ namespace Backend.Services
             try
             {
                 User user = GetUserById(id);
-                bool hasRegisteredOrders = _applicationContext.Orders.Any(order => order.Client.Id == id);
-                if (hasRegisteredOrders)
+                if (user == null)
+                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
+                if (_applicationContext.Orders.Any(order => order.Client.Id == id))
                     throw new NotAllowedDeletionException("User has registered orders. Deletion is forbidden");
                 else
                 {
