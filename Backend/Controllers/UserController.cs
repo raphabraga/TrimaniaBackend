@@ -48,15 +48,22 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserById(id);
                 if (role != "Administrator" && user?.Login != login)
-                    return Unauthorized("Credentials not allowed for the operation.");
-                if (user == null)
-                    return NotFound("No user registered on the database with this ID");
+                    throw new UnauthorizedAccessException("Credentials not allowed for the operation.");
                 return Ok(new ViewUser(user));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return Unauthorized(e.Message);
             }
 
         }
@@ -94,13 +101,18 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    return NotFound("No user registered on the database with this ID.");
+                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
                 return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -112,7 +124,7 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    return NotFound("No user registered on the database with this ID.");
+                    throw new RegisterNotFoundException("No user registered on the database with this ID.");
                 _userService.DeleteUser(user.Id);
                 return NoContent();
             }
@@ -124,7 +136,12 @@ namespace Backend.Controllers
             catch (NotAllowedDeletionException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity("User has registered orders, deletion is forbidden");
+                return UnprocessableEntity(e.Message);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -134,10 +151,7 @@ namespace Backend.Controllers
         {
             try
             {
-                User user = _userService.GetUserById(id);
-                if (user == null)
-                    return NotFound("No user registered on the database with this ID.");
-                _userService.DeleteUser(user.Id);
+                _userService.DeleteUser(id);
                 return NoContent();
             }
             catch (InvalidOperationException e)
@@ -148,7 +162,12 @@ namespace Backend.Controllers
             catch (NotAllowedDeletionException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity("User has registered orders, deletion is forbidden");
+                return UnprocessableEntity(e.Message);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
     }
