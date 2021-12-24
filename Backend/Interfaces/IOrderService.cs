@@ -9,13 +9,13 @@ namespace Backend.Interfaces
         public abstract List<Order> GetOrders(User user, string sort, int? page);
         public abstract Order GetOrderById(int id);
         public abstract Order GetOpenOrder(User user);
-        public abstract Order GetInProgressOrder(User user);
+        public abstract List<Order> GetInProgressOrders(User user);
         public abstract Order CreateOrder(User user);
-        public ChartItem AddToChart(Order order, int productId, int quantity);
-        public abstract bool RemoveFromChart(Order order, int id);
-        public abstract bool ChangeItemQuantity(Order order, int id, string sign);
-        public abstract bool CancelOrder(Order order);
-        public abstract bool CheckoutOrder(Order order, Payment payment);
-        public abstract void ProcessPurchase(Order order, PaymentMethod payment);
+        public ChartItem AddToChart(User user, AddToChartRequest request);
+        public abstract ChartItem RemoveFromChart(User user, int id);
+        public abstract ChartItem ChangeItemQuantity(User user, int id, string sign);
+        public abstract Order CancelOrder(User user);
+        public abstract Order CheckoutOrder(User user, Payment payment);
+        public abstract void ProcessPurchase(Order order, Payment payment);
     }
 }
