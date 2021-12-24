@@ -36,15 +36,25 @@ namespace Backend.Controllers
                 User user = _userService.GetUserByLogin(login);
                 Order order = _orderService.GetOrderById(id);
                 if (order == null)
-                    return NotFound("No order registered on the database with this ID.");
+                    throw new RegisterNotFoundException("No order registered on the database with this ID.");
                 if (role != "Administrator" && order.Client.Id != user.Id)
-                    return Unauthorized("Credentials not allowed for the operation.");
+                    throw new UnauthorizedAccessException("Credentials not allowed for the operation.");
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return Unauthorized(e.Message);
             }
         }
 
@@ -56,13 +66,18 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    return NotFound("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
                 return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -75,16 +90,21 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    return NotFound("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
                 Order order = _orderService.GetOpenOrder(user);
                 if (order == null)
-                    return NotFound("The user has no open orders.");
+                    throw new RegisterNotFoundException("The user has no open orders.");
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
@@ -97,16 +117,21 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    return NotFound("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
                 List<Order> orders = _orderService.GetInProgressOrders(user);
                 if (orders == null)
-                    return NotFound("The user has no orders in progress.");
+                    throw new RegisterNotFoundException("The user has no orders in progress.");
                 return Ok(orders.Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(e.Message);
             }
         }
 
