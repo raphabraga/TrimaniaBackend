@@ -13,12 +13,9 @@ namespace Backend.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly ITokenService _tokenService;
-
-        public AuthenticationController(IUserService uService, ITokenService tService)
+        public AuthenticationController(IUserService uService)
         {
             _userService = uService;
-            _tokenService = tService;
         }
 
         [HttpPost]
@@ -28,18 +25,18 @@ namespace Backend.Controllers
                 return BadRequest(ModelState);
             try
             {
-                User user = _userService.GetUserByLogin(authUser.Login);
-                if (user == null)
-                    return Unauthorized("Incorrect login and/or password.");
-                if (!_userService.CheckPassword(user, authUser.Password))
-                    return Unauthorized("Incorrect login and/or password.");
-                string token = _tokenService.GenerateToken(user);
+                string token = _userService.GetAuthenticationToken(authUser);
                 return Ok(new { token });
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return Unauthorized(e.Message);
             }
         }
     }

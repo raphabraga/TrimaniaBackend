@@ -15,9 +15,11 @@ namespace Backend.Services
     public class UserService : IUserService
     {
         private readonly ApplicationContext _applicationContext;
-        public UserService(ApplicationContext context)
+        private readonly ITokenService _tokenService;
+        public UserService(ApplicationContext context, ITokenService tService)
         {
             _applicationContext = context;
+            _tokenService = tService;
             try
             {
                 _applicationContext.Database.EnsureCreated();
@@ -101,9 +103,21 @@ namespace Backend.Services
             }
         }
 
-        public bool CheckPassword(User user, string pwd)
+        public string GetAuthenticationToken(AuthUser authUser)
         {
-            return BC.Verify(pwd, user.Password);
+            try
+            {
+                User user = GetUserByLogin(authUser.Login);
+                if (user == null)
+                    throw new UnauthorizedAccessException("Incorrect login and/or password.");
+                if (!BC.Verify(authUser.Password, user.Password))
+                    throw new UnauthorizedAccessException("Incorrect login and/or password.");
+                return _tokenService.GenerateToken(user);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
 
         public void DeleteUser(int id)
