@@ -1,3 +1,6 @@
+using System.Net;
+using System.Threading.Tasks;
+using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Net.WebSockets;
 using System;
@@ -36,9 +39,8 @@ namespace Backend.Services
             {
                 return _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
         }
@@ -49,9 +51,8 @@ namespace Backend.Services
             {
                 return _applicationContext.Users.FirstOrDefault(user => user.Login == login);
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
         }
@@ -74,9 +75,8 @@ namespace Backend.Services
                 users = users.Skip(perPage * (page - 1)).Take(perPage).ToList();
                 return users;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
 
@@ -87,13 +87,21 @@ namespace Backend.Services
             user.Password = BC.HashPassword(user.Password);
             try
             {
+                var exceptions = new List<Exception>();
+                if (_applicationContext.Users.Any(u => u.Login == user.Login))
+                    exceptions.Add(new UsedLoginException("User already registered on the database with this login."));
+                if (_applicationContext.Users.Any(u => u.Email == user.Email))
+                    exceptions.Add(new UsedEmailException("User already registered on the database with this email."));
+                if (_applicationContext.Users.Any(u => u.Cpf == user.Cpf))
+                    exceptions.Add(new UsedCpfException("User already registered on the database with this CPF."));
+                if (exceptions.Count > 0)
+                    throw new AggregateException(exceptions);
                 _applicationContext.Users.Add(user);
                 _applicationContext.SaveChanges();
                 return user;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
         }
@@ -110,43 +118,60 @@ namespace Backend.Services
                 User user = GetUserById(id);
                 bool hasRegisteredOrders = _applicationContext.Orders.Any(order => order.Client.Id == id);
                 if (hasRegisteredOrders)
-                    throw new NotAllowedDeletionException("User has registered orders, deletion is forbidden");
+                    throw new NotAllowedDeletionException("User has registered orders. Deletion is forbidden");
                 else
                 {
                     _applicationContext.Users.Remove(user);
                     _applicationContext.SaveChanges();
                 }
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
-            catch (NotAllowedDeletionException e)
+            catch (NotAllowedDeletionException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
         }
 
-        public void UpdateUser(int id, UpdateUser userUpdate)
+        public User UpdateUser(int id, UpdateUser userUpdate)
         {
             try
             {
                 User user = GetUserById(id);
-                user.Name = userUpdate.Name;
-                user.Password = BC.HashPassword(userUpdate.Password);
-                user.Birthday = userUpdate.Birthday;
-                user.Address.State = userUpdate.Address.State;
-                user.Address.City = userUpdate.Address.City;
-                user.Address.Neighborhood = userUpdate.Address.Neighborhood;
-                user.Address.Street = userUpdate.Address.Street;
-                user.Address.Number = userUpdate.Address.Number;
+                user.Name = string.IsNullOrEmpty(userUpdate.Name) ? user.Name : userUpdate.Name;
+                if (userUpdate.Password != null)
+                    user.Password = BC.HashPassword(userUpdate.Password);
+                user.Birthday = (userUpdate.Birthday == null) ? user.Birthday : userUpdate.Birthday;
+                if (user.Address == null)
+                {
+                    if (userUpdate.Address != null)
+                        user.Address = new Address
+                        {
+                            State = userUpdate?.Address?.State,
+                            City = userUpdate?.Address?.City,
+                            Neighborhood = userUpdate?.Address?.Neighborhood,
+                            Street = userUpdate?.Address?.Street,
+                            Number = userUpdate?.Address?.Number
+                        };
+                }
+                else
+                {
+                    if (userUpdate.Address != null)
+                    {
+                        user.Address.State = (userUpdate?.Address?.State == null) ? user?.Address?.State : userUpdate?.Address?.State;
+                        user.Address.City = (userUpdate?.Address?.City == null) ? user?.Address?.City : userUpdate?.Address?.City;
+                        user.Address.Neighborhood = (userUpdate?.Address?.Neighborhood == null) ? user?.Address?.Neighborhood : userUpdate?.Address?.Neighborhood;
+                        user.Address.Street = (userUpdate?.Address?.Street == null) ? user?.Address?.Street : userUpdate?.Address?.Street;
+                        user.Address.Number = (userUpdate?.Address?.Number == null) ? user?.Address?.Number : userUpdate?.Address?.Number;
+                    }
+                }
                 _applicationContext.SaveChanges();
+                return user;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
-                System.Console.WriteLine(e.Message);
                 throw;
             }
         }

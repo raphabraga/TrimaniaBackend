@@ -12,7 +12,7 @@ namespace Backend.Interfaces
         public abstract User CreateUser(User user);
         public abstract bool CheckPassword(User user, string pwd);
         public abstract void DeleteUser(int id);
-        public abstract void UpdateUser(int id, UpdateUser userUpdate);
+        public abstract User UpdateUser(int id, UpdateUser userUpdate);
 
     }
 }

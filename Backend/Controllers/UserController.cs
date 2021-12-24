@@ -69,20 +69,18 @@ namespace Backend.Controllers
                 return BadRequest(ModelState);
             try
             {
-                User user = _userService.Query(userInfo.Login, null, null).FirstOrDefault();
-                if (user != null)
-                    return Conflict("User already registered on the database with this login.");
-                user = _userService.Query(userInfo.Email, null, null).FirstOrDefault();
-                if (user != null)
-                    return Conflict("User already registered on the database with this email.");
-                if (_userService.CreateUser(userInfo) == null)
-                    return BadRequest("Required fields for user register not filled.");
+                _userService.CreateUser(userInfo);
                 return CreatedAtAction(nameof(UserById), new { id = userInfo.Id }, new ViewUser(userInfo));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (AggregateException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
             }
         }
 
@@ -97,8 +95,7 @@ namespace Backend.Controllers
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
                     return NotFound("No user registered on the database with this ID.");
-                _userService.UpdateUser(user.Id, userUpdate);
-                return Ok(new ViewUser(user));
+                return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
             }
             catch (InvalidOperationException e)
             {

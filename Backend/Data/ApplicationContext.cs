@@ -27,17 +27,19 @@ namespace Backend.Data
             modelBuilder.Entity<Address>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.State).IsRequired();
-                entity.Property(e => e.City).IsRequired();
             });
 
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Login).IsUnique();
+                entity.HasIndex(e => e.Cpf).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
                 entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.Cpf).IsRequired();
                 entity.Property(e => e.Login).IsRequired();
                 entity.Property(e => e.Password).IsRequired();
+                entity.Property(e => e.Email).IsRequired();
             });
 
             modelBuilder.Entity<Order>(entity =>

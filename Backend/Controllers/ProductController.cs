@@ -1,7 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Models.Exceptions;
+using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -23,56 +27,103 @@ namespace Backend.Controllers
         public IActionResult AllProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = _productService.GetProducts(filter, sort, page);
-            if (products == null)
-                return NotFound("No registered products matches on the database.");
-            return Ok(products);
+            try
+            {
+                List<Product> products = _productService.GetProducts(filter, sort, page);
+                if (products == null)
+                    return NotFound("No registered products matches on the database.");
+                return Ok(products);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [AllowAnonymous]
         [HttpGet("{id}")]
         public IActionResult ProductsById(int id)
         {
-            Product product = _productService.GetProductById(id);
-            if (product == null)
-                return NotFound("Product not registered on the database with this ID.");
-            return Ok(product);
+            try
+            {
+                Product product = _productService.GetProductById(id);
+                if (product == null)
+                    return NotFound("Product not registered on the database with this ID.");
+                return Ok(product);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost]
         public IActionResult RegisterProduct([FromBody] Product newProduct)
         {
             if (!ModelState.IsValid)
-                return BadRequest("JSON object provided is formatted wrong.");
-            if (_productService.GetProductByName(newProduct.Name) != null)
-                return Conflict("Product already registered on the database with this name.");
-            Product product = _productService.RegisterProduct(newProduct);
-            return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
+                return BadRequest(ModelState);
+            try
+            {
+                Product product = _productService.RegisterProduct(newProduct);
+                return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisteredProductException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] Product updatedProduct)
+        public IActionResult UpdateProduct(int id, [FromBody] UpdateProduct updatedProduct)
         {
             if (!ModelState.IsValid)
-                return BadRequest("JSON object provided is formatted wrong.");
-            if (_productService.GetProductById(id) == null)
-                return NotFound("Product not registered on the database with this ID.");
-            Product product = _productService.GetProductByName(updatedProduct.Name);
-            if (product != null && product.Id != id)
-                return Conflict("Product already registered on the database with this name.");
-            product = _productService.UpdateProduct(id, updatedProduct);
-            return Ok(product);
+                return BadRequest(ModelState);
+            try
+            {
+                if (_productService.GetProductById(id) == null)
+                    return NotFound("Product not registered on the database with this ID.");
+                return Ok(_productService.UpdateProduct(id, updatedProduct));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (RegisteredProductException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeleteProduct(int id)
         {
-            if (_productService.GetProductById(id) == null)
-                return NotFound("Product not registered on the database with this ID.");
-            if (_productService.DeleteProduct(id))
+            try
+            {
+                if (_productService.GetProductById(id) == null)
+                    return NotFound("Product not registered on the database with this ID.");
+                _productService.DeleteProduct(id);
                 return NoContent();
-            else
-                return UnprocessableEntity("Product belongs to registered chart items, deletion is forbidden.");
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (NotAllowedDeletionException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return UnprocessableEntity(e.Message);
+            }
         }
 
     }
