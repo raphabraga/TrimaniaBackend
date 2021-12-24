@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using Backend.Interfaces;
 using Backend.Models;
+using Backend.Models.Enums;
 using Backend.Models.Exceptions;
 using Backend.Models.ViewModels;
+using Backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +33,7 @@ namespace Backend.Controllers
             {
                 List<Product> products = _productService.GetProducts(filter, sort, page);
                 if (products == null)
-                    throw new RegisterNotFoundException("No registered products matches on the database.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductsNotFound));
                 return Ok(products);
             }
             catch (InvalidOperationException e)
@@ -54,7 +56,7 @@ namespace Backend.Controllers
             {
                 Product product = _productService.GetProductById(id);
                 if (product == null)
-                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
                 return Ok(product);
             }
             catch (InvalidOperationException e)
@@ -99,7 +101,7 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
                 return Ok(_productService.UpdateProduct(id, updatedProduct));
             }
             catch (InvalidOperationException e)
@@ -125,7 +127,7 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    throw new RegisterNotFoundException("Product not registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
                 _productService.DeleteProduct(id);
                 return NoContent();
             }

@@ -9,6 +9,8 @@ using Backend.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using Backend.Models.Exceptions;
+using Backend.Models.Enums;
+using Backend.Utils;
 
 namespace Backend.Controllers
 {
@@ -36,9 +38,9 @@ namespace Backend.Controllers
                 User user = _userService.GetUserByLogin(login);
                 Order order = _orderService.GetOrderById(id);
                 if (order == null)
-                    throw new RegisterNotFoundException("No order registered on the database with this ID.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.OrderIdNotFound));
                 if (role != "Administrator" && order.Client.Id != user.Id)
-                    throw new UnauthorizedAccessException("Credentials not allowed for the operation.");
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
@@ -66,7 +68,7 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
                 return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)
@@ -90,10 +92,10 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
                 Order order = _orderService.GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException("The user has no open orders.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.NoOpenOrders));
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
@@ -117,10 +119,10 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException("No user registered on the database with this credentials.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
                 List<Order> orders = _orderService.GetInProgressOrders(user);
                 if (orders == null)
-                    throw new RegisterNotFoundException("The user has no orders in progress.");
+                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.NoInProgressOrders));
                 return Ok(orders.Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)

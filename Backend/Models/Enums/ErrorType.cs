@@ -22,6 +22,7 @@ namespace Backend.Models.Enums
         NotAuthorized,
         CredentialsNotFound,
         NoOpenOrders,
+        NoInProgressOrders,
         ProductsNotFound,
     }
 }

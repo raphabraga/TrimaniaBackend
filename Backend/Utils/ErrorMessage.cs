@@ -15,9 +15,9 @@ namespace Backend.Utils
                 case ErrorType.ChangeItemFromEmptyChart:
                     return "There is no items in the chart in order to change its quantity.";
                 case ErrorType.RemoveItemNotInChart:
-                    return "This item doesn't exist in the cart. Unable to remove it.";
+                    return "This item doesn't exist in the chart. Unable to remove it.";
                 case ErrorType.ChangeItemNotInChart:
-                    return "This item doesn't exist in the cart. Unable to change quantity.";
+                    return "This item doesn't exist in the chart. Unable to change quantity.";
                 case ErrorType.CancelEmptyChart:
                     return "There is no open order to be cancelled.";
                 case ErrorType.CheckoutEmptyChart:
@@ -48,6 +48,8 @@ namespace Backend.Utils
                     return "No user registered on the database with this credentials.";
                 case ErrorType.NoOpenOrders:
                     return "The user has no open orders.";
+                case ErrorType.NoInProgressOrders:
+                    return "The user has no orders in progress.";
                 case ErrorType.ProductsNotFound:
                     return "No registered products matches on the database.";
                 default:
