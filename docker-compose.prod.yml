@@ -1,0 +1,31 @@
+---
+version: "3.3"
+
+services:
+  # Database
+  db:
+    build: ./Db
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./Db/DbScript.sh:/docker-entrypoint-initdb.d/init-database.sh
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: trimaniadb
+      MYSQL_USER: trilogo
+      MYSQL_PASSWORD: 1234
+  # Backend
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile.prod
+    environment:
+      DefaultConnection: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
+      AuthKey: trimania-jwt-authentication-key
+    restart: unless-stopped
+    ports:
+      - 80:5044
+volumes:
+  db-data:
