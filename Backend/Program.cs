@@ -15,6 +15,8 @@ using Backend.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// TODO: Remove this comment for before production version
+// var key = Encoding.ASCII.GetBytes("123");
 var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
 builder.Services.AddAuthentication(o =>
 {

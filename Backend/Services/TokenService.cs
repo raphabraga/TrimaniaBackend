@@ -14,6 +14,8 @@ namespace Backend.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
+            // TODO: Remove this comment for before production version
+            // var key = Encoding.ASCII.GetBytes("123");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

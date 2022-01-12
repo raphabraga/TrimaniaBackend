@@ -14,6 +14,8 @@ namespace Backend.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
+            // TODO: Remove this comment for before production version
+            // optionsBuilder.UseMySql("server=localhost;port=3306;database=trimaniadb;user=trilogo;password=1234",
             new MySqlServerVersion(new Version(8, 0, 27)
             ));
         }
