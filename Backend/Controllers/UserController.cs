@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Backend.Models.ViewModels;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Backend.Models.Exceptions;
 using Backend.Models.Enums;
@@ -28,7 +28,7 @@ namespace Backend.Controllers
         [Authorize(Roles = "Administrator")]
         [HttpGet]
         public IActionResult AllUsers([FromQuery(Name = "filter")] string filter,
-        [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int page)
+        [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try
             {

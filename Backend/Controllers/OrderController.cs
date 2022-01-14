@@ -5,7 +5,7 @@ using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models.ViewModels;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using Backend.Models.Exceptions;

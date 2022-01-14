@@ -2,7 +2,7 @@ using System;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace Backend.Controllers

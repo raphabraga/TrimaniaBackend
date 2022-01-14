@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Backend.Models;
 using Backend.Models.ViewModels;
 
-namespace Backend.Interfaces
+namespace Backend.Interfaces.Services
 {
     public interface IProductService
     {

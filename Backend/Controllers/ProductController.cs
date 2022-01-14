@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.Enums;
 using Backend.Models.Exceptions;

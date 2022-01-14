@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Backend.Data;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
+using Backend.Interfaces.UnitOfWork;
 using Backend.Models;
 using Backend.Models.Enums;
 using Backend.Models.Exceptions;
@@ -13,26 +15,18 @@ namespace Backend.Services
 {
     public class ProductService : IProductService
     {
-        private readonly ApplicationContext _applicationContext;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProductService(ApplicationContext context)
+        public ProductService(IUnitOfWork unitOfWork)
         {
-            _applicationContext = context;
-            try
-            {
-                _applicationContext.Database.EnsureCreated();
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-            }
+            _unitOfWork = unitOfWork;
         }
 
         public Product GetProductByName(string name)
         {
             try
             {
-                return _applicationContext.Products.FirstOrDefault(product => product.Name == name);
+                return _unitOfWork.ProductRepository.GetBy(product => product.Name == name);
             }
             catch (InvalidOperationException)
             {
@@ -42,23 +36,29 @@ namespace Backend.Services
 
         public Product GetProductById(int id)
         {
-            return _applicationContext.Products.FirstOrDefault(product => product.Id == id);
+            try
+            {
+                return _unitOfWork.ProductRepository.GetBy(product => product.Id == id);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
         }
         public List<Product> GetProducts(string filter, string sort, int? queryPage)
         {
-            int perPage = 10;
             try
             {
-                List<Product> products = _applicationContext.Products.ToList();
+                Expression<Func<Product, bool>> predicateFilter = null;
+                Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null;
                 if (!string.IsNullOrEmpty(filter))
-                    products = products.Where(product => product.Name.CaseInsensitiveContains(filter)).ToList();
+                    predicateFilter = product => product.Name.Contains(filter);
                 if (sort == "asc")
-                    products = products.OrderBy(product => product.Name).ToList();
-                else if (sort == "des")
-                    products = products.OrderByDescending(product => product.Name).ToList();
-                int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
-                products = products.Skip(perPage * (page - 1)).Take(perPage).ToList();
-                return products;
+                    orderBy = q => q.OrderBy(product => product.Name);
+                else if (sort == "desc")
+                    orderBy = q => q.OrderByDescending(product => product.Name);
+
+                return _unitOfWork.ProductRepository.Get(predicateFilter, orderBy, null, queryPage).ToList();
             }
             catch (InvalidOperationException)
             {
@@ -71,8 +71,8 @@ namespace Backend.Services
             {
                 if (GetProductByName(product.Name) != null)
                     throw new RegisteredProductException(ErrorMessage.GetMessage(ErrorType.UniqueProductName));
-                _applicationContext.Products.Add(product);
-                _applicationContext.SaveChanges();
+                _unitOfWork.ProductRepository.Insert(product);
+                _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -93,7 +93,7 @@ namespace Backend.Services
                 product.Price = updateProduct.Price == null ? product.Price : updateProduct.Price.Value;
                 product.StockQuantity = updateProduct.StockQuantity == null ? product.StockQuantity : updateProduct.StockQuantity;
                 product.Description = updateProduct.Description == null ? product.Description : updateProduct.Description;
-                _applicationContext.SaveChanges();
+                _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -110,7 +110,7 @@ namespace Backend.Services
                 if (product.StockQuantity < amount)
                     throw new OutOfStockException(ErrorMessage.GetMessage(ErrorType.InsufficientProductInStock));
                 product.StockQuantity -= amount;
-                _applicationContext.SaveChanges();
+                _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -124,10 +124,10 @@ namespace Backend.Services
             try
             {
                 Product product = GetProductById(id);
-                if (_applicationContext.Items.Any(item => item.Product.Id == id))
+                if (_unitOfWork.ChartItemRepository.GetBy(item => item.Product.Id == id) != null)
                     throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
-                _applicationContext.Remove(product);
-                _applicationContext.SaveChanges();
+                _unitOfWork.ProductRepository.Delete(id);
+                _unitOfWork.Commit();
             }
             catch (InvalidOperationException)
             {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
