@@ -21,9 +21,6 @@ services:
     build:
       context: ./Backend
       dockerfile: Dockerfile.prod
-    environment:
-      DefaultConnection: server=db;port=3306;database=trimaniadb;user=trilogo;password=1234
-      AuthKey: trimania-jwt-authentication-key
     restart: unless-stopped
     ports:
       - 80:5044
