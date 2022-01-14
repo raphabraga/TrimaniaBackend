@@ -1,39 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Backend.Data;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
+using Backend.Interfaces.UnitOfWork;
 using Backend.Models;
 using Backend.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Backend.Services
 {
     public class SalesReportService : ISalesReportService
     {
-        private readonly ApplicationContext _applicationContext;
-
-        public SalesReportService(ApplicationContext context)
+        private readonly IUnitOfWork _unitOfWork;
+        public SalesReportService(IUnitOfWork unitOfWork)
         {
-            _applicationContext = context;
-            try
-            {
-                _applicationContext.Database.EnsureCreated();
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-            }
+            _unitOfWork = unitOfWork;
         }
         public SalesReport GenerateReport(DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter)
         {
+            // TODO: Improve this method
             try
             {
                 endDate = endDate == DateTime.MinValue ? DateTime.MaxValue : endDate;
-                List<Order> orders = _applicationContext.Orders.Include(order => order.Client).
-                Include(order => order.Items).ThenInclude(item => item.Product).Where
-                (order => order.CreationDate > startDate && order.CreationDate < endDate).ToList();
+                Expression<Func<Order, bool>> filter = (order => order.CreationDate > startDate && order.CreationDate < endDate);
+                Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes =
+                order => order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
+                List<Order> orders = _unitOfWork.OrderRepository.Get(filter, orderBy: null, includes, page: null).ToList();
                 List<Order> OrdersFiltered = new List<Order>();
                 if (userFilter != null)
                 {

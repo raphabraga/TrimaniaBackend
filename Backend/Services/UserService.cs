@@ -2,40 +2,35 @@ using System;
 using BC = BCrypt.Net.BCrypt;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 using Backend.Models.ViewModels;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Backend.Utils;
 using Backend.Models.Exceptions;
 using Backend.Models.Enums;
+using Backend.Interfaces.UnitOfWork;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
 {
     public class UserService : IUserService
     {
-        private readonly ApplicationContext _applicationContext;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
-        public UserService(ApplicationContext context, ITokenService tService)
+        public UserService(IUnitOfWork unitOfWork, ITokenService tService)
         {
-            _applicationContext = context;
+            _unitOfWork = unitOfWork;
             _tokenService = tService;
-            try
-            {
-                _applicationContext.Database.EnsureCreated();
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-            }
         }
 
         public User GetUserById(int id)
         {
             try
             {
-                User user = _applicationContext.Users.Include(user => user.Address).FirstOrDefault(user => user.Id == id);
+                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
                 if (user == null)
                     throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 return user;
@@ -50,7 +45,7 @@ namespace Backend.Services
         {
             try
             {
-                return _applicationContext.Users.FirstOrDefault(user => user.Login == login);
+                return _unitOfWork.UserRepository.GetBy(user => user.Login == login);
             }
             catch (InvalidOperationException)
             {
@@ -60,27 +55,27 @@ namespace Backend.Services
 
         public List<User> Query(string filter, string sort, int? queryPage)
         {
-            int perPage = 10;
-            List<User> users;
             try
             {
-                users = _applicationContext.Users.Include(user => user.Address).ToList();
+                Expression<Func<User, bool>> predicateFilter = null;
+                Func<IQueryable<User>, IOrderedQueryable<User>> orderBy = null;
+                Func<IQueryable<User>, IIncludableQueryable<User, object>> includes =
+                user => user.Include(user => user.Address);
+
                 if (!string.IsNullOrEmpty(filter))
-                    users = users.Where(user => user.Login.CaseInsensitiveContains(filter) ||
-                user.Name.CaseInsensitiveContains(filter) || user.Email.CaseInsensitiveContains(filter)).ToList();
+                    predicateFilter = user => user.Login.Contains(filter) ||
+                   user.Name.Contains(filter) ||
+                   user.Email.Contains(filter);
                 if (sort == "asc")
-                    users = users.OrderBy(user => user.Name).ToList();
+                    orderBy = q => q.OrderBy(user => user.Name);
                 else if (sort == "desc")
-                    users = users.OrderByDescending(user => user.Name).ToList();
-                int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
-                users = users.Skip(perPage * (page - 1)).Take(perPage).ToList();
-                return users;
+                    orderBy = q => q.OrderByDescending(user => user.Name);
+                return _unitOfWork.UserRepository.Get(predicateFilter, orderBy, includes, queryPage).ToList();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
-
         }
 
         public User CreateUser(User user)
@@ -89,16 +84,16 @@ namespace Backend.Services
             try
             {
                 var exceptions = new List<Exception>();
-                if (_applicationContext.Users.Any(u => u.Login == user.Login))
+                if (_unitOfWork.UserRepository.GetBy(u => u.Login == user.Login) != null)
                     exceptions.Add(new UsedLoginException(ErrorMessage.GetMessage(ErrorType.UniqueUserName)));
-                if (_applicationContext.Users.Any(u => u.Email == user.Email))
+                if (_unitOfWork.UserRepository.GetBy(u => u.Email == user.Email) != null)
                     exceptions.Add(new UsedEmailException(ErrorMessage.GetMessage(ErrorType.UniqueUserEmail)));
-                if (_applicationContext.Users.Any(u => u.Cpf == user.Cpf))
+                if (_unitOfWork.UserRepository.GetBy(u => u.Cpf == user.Cpf) != null)
                     exceptions.Add(new UsedCpfException(ErrorMessage.GetMessage(ErrorType.UniqueUserCpf)));
                 if (exceptions.Count > 0)
                     throw new AggregateException(exceptions);
-                _applicationContext.Users.Add(user);
-                _applicationContext.SaveChanges();
+                _unitOfWork.UserRepository.Insert(user);
+                _unitOfWork.Commit();
                 return user;
             }
             catch (InvalidOperationException)
@@ -128,15 +123,15 @@ namespace Backend.Services
         {
             try
             {
-                User user = GetUserById(id);
+                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id);
                 if (user == null)
                     throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
-                if (_applicationContext.Orders.Any(order => order.Client.Id == id))
+                if (_unitOfWork.OrderRepository.GetBy(order => order.Client.Id == id) != null)
                     throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteUserWithRegisteredOrder));
                 else
                 {
-                    _applicationContext.Users.Remove(user);
-                    _applicationContext.SaveChanges();
+                    _unitOfWork.UserRepository.Delete(id);
+                    _unitOfWork.Commit();
                 }
             }
             catch (InvalidOperationException)
@@ -153,7 +148,7 @@ namespace Backend.Services
         {
             try
             {
-                User user = GetUserById(id);
+                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
                 user.Name = string.IsNullOrEmpty(userUpdate.Name) ? user.Name : userUpdate.Name;
                 if (userUpdate.Password != null)
                     user.Password = BC.HashPassword(userUpdate.Password);
@@ -181,7 +176,7 @@ namespace Backend.Services
                         user.Address.Number = (userUpdate?.Address?.Number == null) ? user?.Address?.Number : userUpdate?.Address?.Number;
                     }
                 }
-                _applicationContext.SaveChanges();
+                _unitOfWork.Commit();
                 return user;
             }
             catch (InvalidOperationException)

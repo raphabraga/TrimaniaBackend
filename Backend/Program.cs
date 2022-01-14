@@ -6,17 +6,19 @@ using Backend.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
+using Backend.Interfaces.UnitOfWork;
+using Backend.Repositories;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // TODO: Remove this comment for before production version
-// var key = Encoding.ASCII.GetBytes("123");
+// var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
 var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
 builder.Services.AddAuthentication(o =>
 {
@@ -55,6 +57,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISalesReportService, SalesReportService>();
 builder.Services.AddScoped<ApplicationContext>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

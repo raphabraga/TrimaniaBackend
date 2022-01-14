@@ -6,47 +6,40 @@ using Backend.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models.ViewModels;
-using Backend.Interfaces;
+using Backend.Interfaces.Services;
 using Backend.Models.Exceptions;
 using Backend.Utils;
 using Backend.Models.Enums;
+using Backend.Interfaces.UnitOfWork;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Backend.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly ApplicationContext _applicationContext;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IProductService _productService;
-        public OrderService(ApplicationContext context, IProductService service)
+        public OrderService(IUnitOfWork unitOfWork, IProductService service)
         {
             _productService = service;
-            _applicationContext = context;
-            try
-            {
-                _applicationContext.Database.EnsureCreated();
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-            }
+            _unitOfWork = unitOfWork;
         }
 
         public List<Order> GetOrders(User user, string sort, int? queryPage)
         {
-            int perPage = 5;
             try
             {
-                List<Order> orders = _applicationContext.Orders.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product)
-                .Where(order => order.Client.Id == user.Id).ToList();
+                Expression<Func<Order, bool>> predicateFilter = order => order.Client.Id == user.Id;
+                Func<IQueryable<Order>, IOrderedQueryable<Order>> orderBy = null;
+                Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
+                order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
                 if (sort == "asc")
-                    orders = orders.OrderBy(order => order.CreationDate).ToList();
+                    orderBy = q => q.OrderBy(order => order.CreationDate);
                 else if (sort == "desc")
-                    orders = orders.OrderByDescending(order => order.CreationDate).ToList();
-                if (queryPage == -1)
-                    return orders;
-                int page = queryPage.GetValueOrDefault(1) == 0 ? 1 : queryPage.GetValueOrDefault(1);
-                orders = orders.Skip(perPage * (page - 1)).Take(perPage).ToList();
-                return orders;
+                    orderBy = q => q.OrderByDescending(order => order.CreationDate);
+
+                return _unitOfWork.OrderRepository.Get(predicateFilter, orderBy, includes, queryPage).ToList();
             }
             catch (InvalidOperationException)
             {
@@ -57,7 +50,10 @@ namespace Backend.Services
         {
             try
             {
-                return _applicationContext.Orders.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product)
+                Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
+                order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
+
+                return _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null)
                 .FirstOrDefault(order => order.Id == id);
             }
             catch (InvalidOperationException)
@@ -69,7 +65,7 @@ namespace Backend.Services
         {
             try
             {
-                return GetOrders(user, "desc", -1).FirstOrDefault(order =>
+                return GetOrders(user, "desc", null).FirstOrDefault(order =>
                 order.Status == OrderStatus.Open);
             }
             catch (InvalidOperationException)
@@ -81,7 +77,7 @@ namespace Backend.Services
         {
             try
             {
-                return GetOrders(user, "desc", -1).Where(order =>
+                return GetOrders(user, "desc", null).Where(order =>
                 order.Status == OrderStatus.InProgress).ToList();
             }
             catch (InvalidOperationException)
@@ -100,8 +96,8 @@ namespace Backend.Services
                     CreationDate = DateTime.Now,
                     Items = new List<ChartItem>()
                 };
-                _applicationContext.Orders.Add(order);
-                _applicationContext.SaveChanges();
+                _unitOfWork.OrderRepository.Insert(order);
+                _unitOfWork.Commit();
                 return order;
             }
             catch (InvalidOperationException)
@@ -133,8 +129,8 @@ namespace Backend.Services
                 }
                 else
                     item.Quantity += request.Quantity.Value;
-                _applicationContext.Update(order);
-                _applicationContext.SaveChanges();
+                _unitOfWork.OrderRepository.Update(order);
+                _unitOfWork.Commit();
                 return item;
             }
             catch (InvalidOperationException)
@@ -162,9 +158,9 @@ namespace Backend.Services
                     order.Items.Remove(item);
                     order.TotalValue -= item.Price * item.Quantity;
                     if (order.Items.Count == 0)
-                        _applicationContext.Orders.Remove(order);
+                        _unitOfWork.OrderRepository.Delete(order.Id);
                     _productService.UpdateProductQuantity(id, -item.Quantity);
-                    _applicationContext.SaveChanges();
+                    _unitOfWork.Commit();
                     return item;
                 }
             }
@@ -206,7 +202,7 @@ namespace Backend.Services
                             _productService.UpdateProductQuantity(id, -1);
                         }
                     }
-                    _applicationContext.SaveChanges();
+                    _unitOfWork.Commit();
                     return item;
                 }
             }
@@ -232,7 +228,7 @@ namespace Backend.Services
                 {
                     _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
                 });
-                _applicationContext.SaveChanges();
+                _unitOfWork.Commit();
                 return order;
             }
             catch (InvalidOperationException)
@@ -249,7 +245,7 @@ namespace Backend.Services
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CheckoutEmptyChart));
                 order.Status = OrderStatus.InProgress;
-                _applicationContext.SaveChanges();
+                _unitOfWork.Commit();
                 ProcessPurchase(order, payment);
                 return order;
             }
@@ -261,6 +257,7 @@ namespace Backend.Services
 
         public void ProcessPurchase(Order order, Payment payment)
         {
+            // TODO: Improve this method
             int processingTime = 0;
             switch (payment.PaymentMethod)
             {
