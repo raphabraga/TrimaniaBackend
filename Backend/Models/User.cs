@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Backend.Models.Enums;
 
 namespace Backend.Models
 {
@@ -22,6 +23,7 @@ namespace Backend.Models
         [RegularExpression(@"^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$",
         ErrorMessage = "Name entered has not allowed character.")]
         public string Name { get; set; }
+        public RoleTypes Role { get; set; } = RoleTypes.Customer;
 
         [Required(ErrorMessage = "Password must be provided.")]
         [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$",
@@ -45,5 +47,6 @@ namespace Backend.Models
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? CreationDate { get; set; }
         public Address Address { get; set; }
+        public int? AddressId { get; set; }
     }
 }
