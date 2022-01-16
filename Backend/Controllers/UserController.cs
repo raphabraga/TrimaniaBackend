@@ -27,7 +27,7 @@ namespace Backend.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
-        public IActionResult AllUsers([FromQuery(Name = "filter")] string filter,
+        public IActionResult GetUsers([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try
@@ -44,13 +44,11 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public IActionResult UserById(int id)
         {
-            string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             try
             {
-                User user = _userService.GetUserById(id);
-                if (role != "Administrator" && user?.Login != login)
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
+                User requestingUser = _userService.GetUserByLogin(login);
+                User user = _userService.GetUserById(requestingUser, id);
                 return Ok(new ViewUser(user));
             }
             catch (InvalidOperationException e)
@@ -67,19 +65,18 @@ namespace Backend.Controllers
             {
                 return Unauthorized(e.Message);
             }
-
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult NewUser([FromBody] User userInfo)
+        public IActionResult NewUser([FromBody] User user)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             try
             {
-                _userService.CreateUser(userInfo);
-                return CreatedAtAction(nameof(UserById), new { id = userInfo.Id }, new ViewUser(userInfo));
+                _userService.CreateUser(user);
+                return CreatedAtAction(nameof(UserById), new { id = user.Id }, new ViewUser(user));
             }
             catch (InvalidOperationException e)
             {

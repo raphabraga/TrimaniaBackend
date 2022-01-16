@@ -6,7 +6,7 @@ namespace Backend.Interfaces.Services
 {
     public interface IUserService
     {
-        public abstract User GetUserById(int id);
+        public abstract User GetUserById(User requestingUser, int id);
         public abstract User GetUserByLogin(string login);
         public abstract List<User> Query(string filter, string sort, int? queryPage);
         public abstract User CreateUser(User user);

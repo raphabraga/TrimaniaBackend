@@ -7,7 +7,7 @@ namespace Backend.Interfaces.Services
 {
     public interface ISalesReportService
     {
-        public abstract SalesReport GenerateReport(DateTime startDate, DateTime endDate,
+        public abstract SalesReport GenerateReport(User userRequesting, DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter);
 
     }

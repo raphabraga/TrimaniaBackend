@@ -19,7 +19,7 @@ namespace Backend.Services
         {
             _unitOfWork = unitOfWork;
         }
-        public SalesReport GenerateReport(DateTime startDate, DateTime endDate,
+        public SalesReport GenerateReport(User requestingUser, DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter)
         {
             // TODO: Improve this method
@@ -31,6 +31,8 @@ namespace Backend.Services
                 order => order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
                 List<Order> orders = _unitOfWork.OrderRepository.Get(filter, orderBy: null, includes, page: null).ToList();
                 List<Order> OrdersFiltered = new List<Order>();
+                if (requestingUser.Role != "Administrator")
+                    userFilter = new List<string> { requestingUser.Login };
                 if (userFilter != null)
                 {
                     userFilter.ForEach(userLogin => OrdersFiltered = OrdersFiltered.Union(

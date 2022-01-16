@@ -35,12 +35,10 @@ namespace Backend.Controllers
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             try
             {
-                User user = _userService.GetUserByLogin(login);
-                Order order = _orderService.GetOrderById(id);
+                User requestingUser = _userService.GetUserByLogin(login);
+                Order order = _orderService.GetOrderById(requestingUser, id);
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.OrderIdNotFound));
-                if (role != "Administrator" && order.Client.Id != user.Id)
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
@@ -61,7 +59,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public IActionResult UserOrders([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
+        public IActionResult OrdersByUser([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             try
@@ -138,7 +136,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddProductToChart([FromBody] AddToChartRequest request)
+        public IActionResult AddToChart([FromBody] AddToChartRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -167,7 +165,7 @@ namespace Backend.Controllers
 
         [HttpPut]
         [Route("cancel")]
-        public IActionResult Cancel()
+        public IActionResult CancelOrder()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             try
@@ -189,7 +187,7 @@ namespace Backend.Controllers
 
         [HttpPut]
         [Route("checkout")]
-        public IActionResult Checkout([FromBody] Payment payment)
+        public IActionResult CheckoutOrder([FromBody] Payment payment)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -212,7 +210,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("remove-item/{id}")]
-        public IActionResult RemoveProductFromChart(int id)
+        public IActionResult RemoveFromChart(int id)
         {
             try
             {
@@ -234,7 +232,7 @@ namespace Backend.Controllers
 
         [Route("increase-item/{id}")]
         [HttpPut]
-        public IActionResult IncreaseItemQuantity(int id)
+        public IActionResult IncreaseQuantity(int id)
         {
             try
             {
@@ -261,7 +259,7 @@ namespace Backend.Controllers
 
         [Route("decrease-item/{id}")]
         [HttpPut]
-        public IActionResult DecreaseItemQuantity(int id)
+        public IActionResult DecreaseQuantity(int id)
         {
             try
             {

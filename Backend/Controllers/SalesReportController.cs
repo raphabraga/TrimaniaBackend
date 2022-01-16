@@ -35,11 +35,8 @@ namespace Backend.Controllers
             try
             {
                 string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-                string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
-                User user = _userService.GetUserByLogin(login);
-                if (role != "Administrator")
-                    filter.UserFilter = new List<string>() { login };
-                return Ok(_salesReportService.GenerateReport(filter.StartDate,
+                User requestingUser = _userService.GetUserByLogin(login);
+                return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,
                     filter.EndDate, filter.UserFilter, filter.StatusFilter));
             }
             catch (InvalidOperationException e)

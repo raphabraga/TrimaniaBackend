@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Backend.Data;
 using Backend.Models;
-using Backend.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
