@@ -3,7 +3,6 @@ using System.Linq;
 using Backend.Data;
 using Backend.Models;
 using Backend.Models.Enums;
-using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,11 +14,13 @@ namespace Backend.Migrations
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IConfiguration _configuration;
+        private readonly IDbSeeding _dbSeeding;
 
-        public DbInitializer(IServiceScopeFactory scopeFactory, IConfiguration configuration)
+        public DbInitializer(IServiceScopeFactory scopeFactory, IConfiguration configuration, IDbSeeding dbSeeding)
         {
-            this._scopeFactory = scopeFactory;
+            _scopeFactory = scopeFactory;
             _configuration = configuration;
+            _dbSeeding = dbSeeding;
         }
 
         public void Initialize()
@@ -86,23 +87,34 @@ namespace Backend.Migrations
                 {
                     if (context.Users.Count() <= 1)
                     {
-                        for (int i = 2; i < 50; i++)
+                        for (int i = 2; i <= 50; i++)
                         {
-                            var address = SeedingUtils.GenerateAddress(i);
+                            var address = _dbSeeding.GenerateAddress();
                             context.Addresses.Add(address);
-                            var adminUser = SeedingUtils.GenerateUser(i);
-                            context.Users.Add(adminUser);
+                            context.SaveChanges();
+                            var user = _dbSeeding.GenerateUser();
+                            context.Users.Add(user);
+                            context.SaveChanges();
                         }
                     }
                     if (!context.Products.Any())
                     {
                         for (int i = 1; i <= 100; i++)
                         {
-                            var product = SeedingUtils.GenerateProduct(i);
+                            var product = _dbSeeding.GenerateProduct();
                             context.Products.Add(product);
+                            context.SaveChanges();
                         }
                     }
-                    context.SaveChanges();
+                    if (!context.Orders.Any())
+                    {
+                        for (int i = 1; i < 200; i++)
+                        {
+                            var order = _dbSeeding.GenerateOrder();
+                            context.Orders.Add(order);
+                            context.SaveChanges();
+                        }
+                    }
                 }
             }
         }

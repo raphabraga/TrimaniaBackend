@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using System;
 
 namespace Backend.Data
 {
@@ -53,6 +54,11 @@ namespace Backend.Data
                 entity.Property(e => e.Price).IsRequired();
                 entity.Property(e => e.Quantity).IsRequired();
             });
+        }
+
+        internal object Entry()
+        {
+            throw new NotImplementedException();
         }
     }
 }
