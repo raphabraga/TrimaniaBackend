@@ -18,7 +18,7 @@ namespace Backend.Services
         }
         public string GenerateToken(User user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();  
+            var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration.GetValue<String>("AuthKey"));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -26,7 +26,7 @@ namespace Backend.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Login),
                     new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, (user.Login == "admin") ? "Administrator" : "client")
+                    new Claim(ClaimTypes.Role, user.Role)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
