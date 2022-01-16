@@ -56,7 +56,7 @@ namespace Backend.Services
                 Order order = _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null)
                 .FirstOrDefault(order => order.Id == id);
                 if (requestingUser.Role != "Administrator" && order?.Client?.Id != requestingUser.Id)
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
+                    throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.NotAuthorized));
                 return order;
             }
             catch (InvalidOperationException)
@@ -113,7 +113,7 @@ namespace Backend.Services
             try
             {
                 if (_productService.GetProductById(request.ProductId.Value) == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
                 Order order = GetOpenOrder(user);
                 if (order == null)
                     order = CreateOrder(user);
@@ -152,10 +152,10 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.RemoveItemFromEmptyChart));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.RemoveItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
                 if (item == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
                 else
                 {
                     order.Items.Remove(item);
@@ -179,10 +179,10 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ChangeItemFromEmptyChart));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
                 if (item == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ChangeItemNotInChart));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInChart));
                 else
                 {
                     if (sign == "Increase")
@@ -224,7 +224,7 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CancelEmptyChart));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CancelEmptyChart));
                 order.Status = OrderStatus.Cancelled;
                 order.CancellationDate = DateTime.Now;
                 order.Items.ForEach(item =>
@@ -246,7 +246,7 @@ namespace Backend.Services
             {
                 Order order = GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CheckoutEmptyChart));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CheckoutEmptyChart));
                 order.Status = OrderStatus.InProgress;
                 _unitOfWork.Commit();
                 ProcessPurchase(order, payment);

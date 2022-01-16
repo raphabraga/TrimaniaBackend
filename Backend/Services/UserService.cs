@@ -31,10 +31,10 @@ namespace Backend.Services
             try
             {
                 User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
-                if (requestingUser.Role != "Administrator" && requestingUser.Login != user.Login)
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
+                if (requestingUser.Role != "Administrator" && requestingUser.Login != user.Login)
+                    throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.NotAuthorized));
                 return user;
             }
             catch (InvalidOperationException)
@@ -87,11 +87,11 @@ namespace Backend.Services
             {
                 var exceptions = new List<Exception>();
                 if (_unitOfWork.UserRepository.GetBy(u => u.Login == user.Login) != null)
-                    exceptions.Add(new UsedLoginException(ErrorMessage.GetMessage(ErrorType.UniqueUserName)));
+                    exceptions.Add(new UsedLoginException(ErrorUtils.GetMessage(ErrorType.UniqueUserName)));
                 if (_unitOfWork.UserRepository.GetBy(u => u.Email == user.Email) != null)
-                    exceptions.Add(new UsedEmailException(ErrorMessage.GetMessage(ErrorType.UniqueUserEmail)));
+                    exceptions.Add(new UsedEmailException(ErrorUtils.GetMessage(ErrorType.UniqueUserEmail)));
                 if (_unitOfWork.UserRepository.GetBy(u => u.Cpf == user.Cpf) != null)
-                    exceptions.Add(new UsedCpfException(ErrorMessage.GetMessage(ErrorType.UniqueUserCpf)));
+                    exceptions.Add(new UsedCpfException(ErrorUtils.GetMessage(ErrorType.UniqueUserCpf)));
                 if (exceptions.Count > 0)
                     throw new AggregateException(exceptions);
                 _unitOfWork.UserRepository.Insert(user);
@@ -110,9 +110,9 @@ namespace Backend.Services
             {
                 User user = GetUserByLogin(authUser.Login);
                 if (user == null)
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.IncorrectLoginOrPassword));
+                    throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.IncorrectLoginOrPassword));
                 if (!BC.Verify(authUser.Password, user.Password))
-                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.IncorrectLoginOrPassword));
+                    throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.IncorrectLoginOrPassword));
                 return _tokenService.GenerateToken(user);
             }
             catch (InvalidOperationException)
@@ -127,9 +127,9 @@ namespace Backend.Services
             {
                 User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
                 if (_unitOfWork.OrderRepository.GetBy(order => order.Client.Id == id) != null)
-                    throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteUserWithRegisteredOrder));
+                    throw new NotAllowedDeletionException(ErrorUtils.GetMessage(ErrorType.DeleteUserWithRegisteredOrder));
                 else
                 {
                     _unitOfWork.UserRepository.Delete(id);

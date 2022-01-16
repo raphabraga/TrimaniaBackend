@@ -70,7 +70,7 @@ namespace Backend.Services
             try
             {
                 if (GetProductByName(product.Name) != null)
-                    throw new RegisteredProductException(ErrorMessage.GetMessage(ErrorType.UniqueProductName));
+                    throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
                 _unitOfWork.ProductRepository.Insert(product);
                 _unitOfWork.Commit();
                 return product;
@@ -87,7 +87,7 @@ namespace Backend.Services
             {
                 Product product = GetProductByName(updateProduct.Name);
                 if (product != null && product.Id != id)
-                    throw new RegisteredProductException(ErrorMessage.GetMessage(ErrorType.UniqueProductName));
+                    throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
                 product = GetProductById(id);
                 product.Name = string.IsNullOrEmpty(updateProduct.Name) ? product.Name : updateProduct.Name;
                 product.Price = updateProduct.Price == null ? product.Price : updateProduct.Price.Value;
@@ -108,7 +108,7 @@ namespace Backend.Services
             {
                 Product product = GetProductById(id);
                 if (product.StockQuantity < amount)
-                    throw new OutOfStockException(ErrorMessage.GetMessage(ErrorType.InsufficientProductInStock));
+                    throw new OutOfStockException(ErrorUtils.GetMessage(ErrorType.InsufficientProductInStock));
                 product.StockQuantity -= amount;
                 _unitOfWork.Commit();
                 return product;
@@ -125,7 +125,7 @@ namespace Backend.Services
             {
                 Product product = GetProductById(id);
                 if (_unitOfWork.ChartItemRepository.GetBy(item => item.Product.Id == id) != null)
-                    throw new NotAllowedDeletionException(ErrorMessage.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
+                    throw new NotAllowedDeletionException(ErrorUtils.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
                 _unitOfWork.ProductRepository.Delete(id);
                 _unitOfWork.Commit();
             }

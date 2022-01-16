@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Backend.Models.Exceptions;
 using Backend.Models.Enums;
 using Backend.Utils;
+using System.Net;
 
 namespace Backend.Controllers
 {
@@ -38,23 +39,23 @@ namespace Backend.Controllers
                 User requestingUser = _userService.GetUserByLogin(login);
                 Order order = _orderService.GetOrderById(requestingUser, id);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.OrderIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.OrderIdNotFound));
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
             catch (UnauthorizedAccessException e)
             {
                 System.Console.WriteLine(e.Message);
-                return Unauthorized(e.Message);
+                return Unauthorized(new ErrorMessage(e, HttpStatusCode.Unauthorized));
             }
         }
 
@@ -66,18 +67,18 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
                 return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -90,21 +91,21 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
                 Order order = _orderService.GetOpenOrder(user);
                 if (order == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.NoOpenOrders));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoOpenOrders));
                 return Ok(new ViewOrder(order));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -117,21 +118,21 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.CredentialsNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
                 List<Order> orders = _orderService.GetInProgressOrders(user);
                 if (orders == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.NoInProgressOrders));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoInProgressOrders));
                 return Ok(orders.Select(order => new ViewOrder(order)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -149,17 +150,17 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (OutOfStockException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -176,12 +177,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -200,12 +201,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -221,12 +222,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -243,17 +244,17 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
             catch (OutOfStockException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
         }
 
@@ -270,17 +271,17 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
             catch (OutOfStockException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
         }
     }
