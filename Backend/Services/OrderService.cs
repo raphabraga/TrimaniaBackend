@@ -46,15 +46,18 @@ namespace Backend.Services
                 throw;
             }
         }
-        public Order GetOrderById(int id)
+        public Order GetOrderById(User requestingUser, int id)
         {
             try
             {
                 Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
                 order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
 
-                return _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null)
+                Order order = _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null)
                 .FirstOrDefault(order => order.Id == id);
+                if (requestingUser.Role != "Administrator" && order?.Client?.Id != requestingUser.Id)
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
+                return order;
             }
             catch (InvalidOperationException)
             {

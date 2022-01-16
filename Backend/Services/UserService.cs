@@ -26,11 +26,13 @@ namespace Backend.Services
             _tokenService = tService;
         }
 
-        public User GetUserById(int id)
+        public User GetUserById(User requestingUser, int id)
         {
             try
             {
                 User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
+                if (requestingUser.Role != "Administrator" && requestingUser.Login != user.Login)
+                    throw new UnauthorizedAccessException(ErrorMessage.GetMessage(ErrorType.NotAuthorized));
                 if (user == null)
                     throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
                 return user;

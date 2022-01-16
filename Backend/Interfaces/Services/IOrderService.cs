@@ -7,7 +7,7 @@ namespace Backend.Interfaces.Services
     public interface IOrderService
     {
         public abstract List<Order> GetOrders(User user, string sort, int? page);
-        public abstract Order GetOrderById(int id);
+        public abstract Order GetOrderById(User requestingUser, int id);
         public abstract Order GetOpenOrder(User user);
         public abstract List<Order> GetInProgressOrders(User user);
         public abstract Order CreateOrder(User user);
