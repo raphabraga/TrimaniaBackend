@@ -13,13 +13,14 @@ using Backend.Interfaces.Services;
 using Backend.Interfaces.UnitOfWork;
 using Backend.Repositories;
 using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
+using Backend.Migrations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// TODO: Remove this comment for before production version
-// var key = Encoding.ASCII.GetBytes("trimania-jwt-authentication-key");
-var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("AuthKey"));
+var key = Encoding.ASCII.GetBytes(builder.Configuration.GetValue<String>("AuthKey"));
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,7 +51,15 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<GzipCompressionProvider>();
     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
 });
-builder.Services.AddDbContext<ApplicationContext>();
+
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+builder.Services.AddDbContext<ApplicationContext>(options =>
+{
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    new MySqlServerVersion(new Version(8, 0, 27)));
+});
+builder.Services.AddScoped<IDbSeeding, DbSeeding>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -68,6 +77,16 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+using (var scope = scopeFactory.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
+    dbInitializer.Initialize();
+    dbInitializer.SeedAdmin();
+    if (app.Environment.IsDevelopment())
+        dbInitializer.SeedData();
 }
 app.UseResponseCompression();
 app.UseHttpsRedirection();

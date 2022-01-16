@@ -1,6 +1,6 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using System;
 
 namespace Backend.Data
 {
@@ -11,14 +11,7 @@ namespace Backend.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ChartItem> Items { get; set; }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            // TODO: Remove this comment for before production version
-            // optionsBuilder.UseMySql("server=localhost;port=3306;database=trimaniadb;user=trilogo;password=1234",
-            optionsBuilder.UseMySql(Environment.GetEnvironmentVariable("DefaultConnection"),
-            new MySqlServerVersion(new Version(8, 0, 27)
-            ));
-        }
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -61,6 +54,11 @@ namespace Backend.Data
                 entity.Property(e => e.Price).IsRequired();
                 entity.Property(e => e.Quantity).IsRequired();
             });
+        }
+
+        internal object Entry()
+        {
+            throw new NotImplementedException();
         }
     }
 }

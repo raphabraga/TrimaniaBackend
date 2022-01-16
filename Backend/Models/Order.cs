@@ -8,6 +8,7 @@ namespace Backend.Models
         public Order() { }
         public int Id { get; set; }
         public User Client { get; set; }
+        public int? ClientId { get; set; }
         public decimal TotalValue { get; set; }
         public List<ChartItem> Items { get; set; }
         public DateTime? CreationDate { get; set; }

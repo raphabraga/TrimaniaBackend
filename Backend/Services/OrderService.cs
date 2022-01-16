@@ -275,11 +275,12 @@ namespace Backend.Services
             {
                 try
                 {
-                    using var context = new ApplicationContext();
+                    // TODO: Fix this part (disposing before persisting data in DB)
+                    using var unitOfWork = _unitOfWork;
                     order.Status = OrderStatus.Finished;
                     order.FinishingDate = DateTime.Now;
-                    context.Update(order);
-                    context.SaveChanges();
+                    _unitOfWork.OrderRepository.Update(order);
+                    _unitOfWork.Commit();
                 }
                 catch (InvalidOperationException)
                 {
