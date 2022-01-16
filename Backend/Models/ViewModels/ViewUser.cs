@@ -6,6 +6,7 @@ namespace Backend.Models.ViewModels
     {
         public int Id { get; set; }
         public string Login { get; set; }
+        public string Role { get; set; }
         public string Name { get; set; }
         public string Cpf { get; set; }
         public string Email { get; set; }
@@ -17,6 +18,7 @@ namespace Backend.Models.ViewModels
             {
                 Id = user.Id;
                 Login = user.Login;
+                Role = user.Role;
                 Name = user.Name;
                 Cpf = user.Cpf;
                 Email = user.Email;

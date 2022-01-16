@@ -23,7 +23,7 @@ namespace Backend.Models
         [RegularExpression(@"^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$",
         ErrorMessage = "Name entered has not allowed character.")]
         public string Name { get; set; }
-        public RoleTypes Role { get; set; } = RoleTypes.Customer;
+        public string Role { get; set; } = "Customer";
 
         [Required(ErrorMessage = "Password must be provided.")]
         [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$",

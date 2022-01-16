@@ -67,7 +67,7 @@ namespace Backend.Migrations
                             Login = "admin",
                             Cpf = "00000000000",
                             Email = "admin@trilogo.com",
-                            Role = RoleTypes.Admin,
+                            Role = "Administrator",
                             Password = BC.HashPassword(_configuration.GetValue<string>("AdminPassword")),
                             Birthday = new System.DateTime(2016, 9, 3),
                             CreationDate = new System.DateTime(2016, 9, 3),
