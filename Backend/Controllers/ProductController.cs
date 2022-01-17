@@ -27,7 +27,32 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult GetProducts([FromQuery(Name = "filter")] string filter,
+        public IActionResult GetProducts([FromQuery(Name = "sort")] string sort,
+        [FromQuery(Name = "page")] int? page)
+        {
+            try
+            {
+                List<Product> products = _productService.GetProducts(filter: null, sort, page);
+                if (products == null)
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
+                return Ok(products);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("search")]
+        public IActionResult SearchProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try

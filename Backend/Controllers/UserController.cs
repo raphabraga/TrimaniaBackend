@@ -28,7 +28,23 @@ namespace Backend.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
-        public IActionResult GetUsers([FromQuery(Name = "filter")] string filter,
+        public IActionResult GetUsers([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
+        {
+            try
+            {
+                return Ok(_userService.Query(filter: null, sort, page).Select(user => new ViewUser(user)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
+            }
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpGet]
+        [Route("search")]
+        public IActionResult SearchUsers([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try
