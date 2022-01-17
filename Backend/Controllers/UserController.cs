@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Backend.Models.Exceptions;
 using Backend.Models.Enums;
 using Backend.Utils;
+using System.Net;
 
 namespace Backend.Controllers
 {
@@ -27,7 +28,23 @@ namespace Backend.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
-        public IActionResult GetUsers([FromQuery(Name = "filter")] string filter,
+        public IActionResult GetUsers([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
+        {
+            try
+            {
+                return Ok(_userService.Query(filter: null, sort, page).Select(user => new ViewUser(user)));
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
+            }
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpGet]
+        [Route("search")]
+        public IActionResult SearchUsers([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try
@@ -37,7 +54,7 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
         }
 
@@ -54,16 +71,16 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
             catch (UnauthorizedAccessException e)
             {
-                return Unauthorized(e.Message);
+                return Unauthorized(new ErrorMessage(e, HttpStatusCode.Unauthorized));
             }
         }
 
@@ -81,12 +98,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (AggregateException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
         }
 
@@ -100,18 +117,18 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
                 return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -123,24 +140,24 @@ namespace Backend.Controllers
             {
                 User user = _userService.GetUserByLogin(login);
                 if (user == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.UserIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
                 _userService.DeleteUser(user.Id);
                 return NoContent();
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (NotAllowedDeletionException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -156,17 +173,17 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (NotAllowedDeletionException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
     }

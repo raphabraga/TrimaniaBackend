@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using Backend.Interfaces.Services;
 using Backend.Models;
@@ -42,7 +42,7 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
         }
     }

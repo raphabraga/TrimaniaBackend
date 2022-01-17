@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.Enums;
@@ -26,25 +27,50 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult GetProducts([FromQuery(Name = "filter")] string filter,
+        public IActionResult GetProducts([FromQuery(Name = "sort")] string sort,
+        [FromQuery(Name = "page")] int? page)
+        {
+            try
+            {
+                List<Product> products = _productService.GetProducts(filter: null, sort, page);
+                if (products == null)
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
+                return Ok(products);
+            }
+            catch (InvalidOperationException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
+            }
+            catch (RegisterNotFoundException e)
+            {
+                System.Console.WriteLine(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("search")]
+        public IActionResult SearchProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             try
             {
                 List<Product> products = _productService.GetProducts(filter, sort, page);
                 if (products == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductsNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
                 return Ok(products);
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -56,18 +82,18 @@ namespace Backend.Controllers
             {
                 Product product = _productService.GetProductById(id);
                 if (product == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
                 return Ok(product);
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -84,12 +110,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisteredProductException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
         }
 
@@ -101,23 +127,23 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
                 return Ok(_productService.UpdateProduct(id, updatedProduct));
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (RegisteredProductException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 
@@ -127,24 +153,24 @@ namespace Backend.Controllers
             try
             {
                 if (_productService.GetProductById(id) == null)
-                    throw new RegisterNotFoundException(ErrorMessage.GetMessage(ErrorType.ProductIdNotFound));
+                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
                 _productService.DeleteProduct(id);
                 return NoContent();
             }
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (NotAllowedDeletionException e)
             {
                 System.Console.WriteLine(e.Message);
-                return UnprocessableEntity(e.Message);
+                return UnprocessableEntity(new ErrorMessage(e, HttpStatusCode.UnprocessableEntity));
             }
             catch (RegisterNotFoundException e)
             {
                 System.Console.WriteLine(e.Message);
-                return NotFound(e.Message);
+                return NotFound(new ErrorMessage(e, HttpStatusCode.NotFound));
             }
         }
 

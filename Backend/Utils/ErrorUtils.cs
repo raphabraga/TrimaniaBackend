@@ -2,7 +2,7 @@ using Backend.Models.Enums;
 
 namespace Backend.Utils
 {
-    public static class ErrorMessage
+    public static class ErrorUtils
     {
         public static string GetMessage(ErrorType type)
         {

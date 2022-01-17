@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Backend.Models.Enums;
 
 namespace Backend.Models
 {
@@ -40,11 +39,9 @@ namespace Backend.Models
         public string Email { get; set; }
 
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? Birthday { get; set; }
 
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? CreationDate { get; set; }
         public Address Address { get; set; }
         public int? AddressId { get; set; }

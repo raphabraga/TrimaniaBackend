@@ -1,3 +1,4 @@
+using System.Net;
 using System;
 using Backend.Models;
 using Backend.Models.ViewModels;
@@ -31,12 +32,12 @@ namespace Backend.Controllers
             catch (InvalidOperationException e)
             {
                 System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
             }
             catch (UnauthorizedAccessException e)
             {
                 System.Console.WriteLine(e.Message);
-                return Unauthorized(e.Message);
+                return Unauthorized(new ErrorMessage(e, System.Net.HttpStatusCode.Unauthorized));
             }
         }
     }
