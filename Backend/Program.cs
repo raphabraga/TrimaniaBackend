@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Migrations;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Backend.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,8 @@ builder.Services.AddAuthentication(o =>
 builder.Services.AddControllers().AddJsonOptions(option =>
 {
     option.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    option.JsonSerializerOptions.Converters.Add(new DateJsonConverter());
+    option.JsonSerializerOptions.Converters.Add(new DecimalJsonConverter());
     option.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 builder.Services.AddApiVersioning(config =>

@@ -1,9 +1,6 @@
-using System.ComponentModel;
 using System.Linq;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using Backend.Serializers;
 
 namespace Backend.Models.ViewModels
 {
@@ -12,8 +9,6 @@ namespace Backend.Models.ViewModels
         public string ClientLogin { get; set; }
         public int OrderId { get; set; }
         public OrderStatus Status { get; set; }
-
-        [JsonConverter(typeof(DateJsonConverter))]
         public DateTime? CreationDate { get; set; }
         public decimal TotalValue { get; set; }
         public List<ViewItem> Items { get; set; }

@@ -15,7 +15,6 @@ namespace Backend.Models.ViewModels
         public string Password { get; set; }
 
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? Birthday { get; set; }
         public Address Address { get; set; }
 

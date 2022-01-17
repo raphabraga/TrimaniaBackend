@@ -145,7 +145,7 @@ namespace Backend.Controllers
             try
             {
                 User user = _userService.GetUserByLogin(login);
-                return Ok(_orderService.AddToChart(user, request));
+                return Ok(new ViewItem(_orderService.AddToChart(user, request)));
             }
             catch (InvalidOperationException e)
             {
@@ -217,7 +217,7 @@ namespace Backend.Controllers
             {
                 string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
                 User user = _userService.GetUserByLogin(login);
-                return Ok(_orderService.RemoveFromChart(user, id));
+                return Ok(new ViewItem(_orderService.RemoveFromChart(user, id)));
             }
             catch (InvalidOperationException e)
             {
@@ -239,7 +239,7 @@ namespace Backend.Controllers
             {
                 string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
                 User user = _userService.GetUserByLogin(login);
-                return Ok(_orderService.ChangeItemQuantity(user, id, "Increase"));
+                return Ok(new ViewItem(_orderService.ChangeItemQuantity(user, id, "Increase")));
             }
             catch (InvalidOperationException e)
             {
@@ -266,7 +266,7 @@ namespace Backend.Controllers
             {
                 string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
                 User user = _userService.GetUserByLogin(login);
-                return Ok(_orderService.ChangeItemQuantity(user, id, "decrease"));
+                return Ok(new ViewItem(_orderService.ChangeItemQuantity(user, id, "decrease")));
             }
             catch (InvalidOperationException e)
             {
