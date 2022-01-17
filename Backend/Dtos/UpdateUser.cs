@@ -1,7 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Backend.Models;
 
-namespace Backend.Models.ViewModels
+namespace Backend.Dtos
 {
     public class UpdateUser
     {

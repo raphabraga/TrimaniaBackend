@@ -1,6 +1,7 @@
 using System;
+using Backend.Models;
 
-namespace Backend.Models.ViewModels
+namespace Backend.ViewModels
 {
     public class ViewUser
     {

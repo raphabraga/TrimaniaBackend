@@ -2,9 +2,7 @@ using System;
 using BC = BCrypt.Net.BCrypt;
 using System.Linq;
 using System.Collections.Generic;
-using Backend.Data;
 using Backend.Models;
-using Backend.Models.ViewModels;
 using Backend.Interfaces.Services;
 using Backend.Utils;
 using Backend.Models.Exceptions;
@@ -13,6 +11,7 @@ using Backend.Interfaces.UnitOfWork;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
+using Backend.Dtos;
 
 namespace Backend.Services
 {
