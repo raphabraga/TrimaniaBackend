@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text.Json;
 using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.ViewModels;
@@ -36,8 +37,8 @@ namespace Backend.Controllers
             {
                 string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
                 User requestingUser = _userService.GetUserByLogin(login);
-                return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,
-                    filter.EndDate, filter.UserFilter, filter.StatusFilter));
+                return Ok((_salesReportService.GenerateReport(requestingUser, filter.StartDate,
+                    filter.EndDate, filter.UserFilter, filter.StatusFilter)));
             }
             catch (InvalidOperationException e)
             {
