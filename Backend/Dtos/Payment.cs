@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using Backend.Models.Enums;
 
-namespace Backend.Models.ViewModels
+namespace Backend.Dtos
 {
     public class Payment
     {

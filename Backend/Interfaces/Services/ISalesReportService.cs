@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Backend.Dtos;
 using Backend.Models;
-using Backend.Models.ViewModels;
+using Backend.Models.Enums;
 
 namespace Backend.Interfaces.Services
 {

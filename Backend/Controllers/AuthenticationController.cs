@@ -1,10 +1,10 @@
 using System.Net;
 using System;
-using Backend.Models;
-using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
+using Backend.Dtos;
+using Backend.Models.ViewModels;
 
 namespace Backend.Controllers
 {

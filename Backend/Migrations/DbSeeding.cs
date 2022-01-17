@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Backend.Data;
 using Backend.Models;
+using Backend.Models.Enums;
 using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using BC = BCrypt.Net.BCrypt;

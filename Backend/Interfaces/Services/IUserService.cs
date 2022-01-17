@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Backend.Dtos;
 using Backend.Models;
-using Backend.Models.ViewModels;
 
 namespace Backend.Interfaces.Services
 {

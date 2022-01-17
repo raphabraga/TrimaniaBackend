@@ -1,8 +1,10 @@
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using Backend.Models;
+using Backend.Models.Enums;
 
-namespace Backend.Models.ViewModels
+namespace Backend.ViewModels
 {
     public class ViewOrder
     {

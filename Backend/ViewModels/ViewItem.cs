@@ -1,4 +1,6 @@
-namespace Backend.Models.ViewModels
+using Backend.Models;
+
+namespace Backend.ViewModels
 {
     public class ViewItem
     {

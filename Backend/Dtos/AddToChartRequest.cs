@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Models.ViewModels
+namespace Backend.Dtos
 {
     public class AddToChartRequest
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.Enums;

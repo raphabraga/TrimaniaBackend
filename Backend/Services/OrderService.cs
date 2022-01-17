@@ -1,11 +1,9 @@
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using Backend.Data;
 using Backend.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Backend.Models.ViewModels;
 using Backend.Interfaces.Services;
 using Backend.Models.Exceptions;
 using Backend.Utils;
@@ -13,6 +11,7 @@ using Backend.Models.Enums;
 using Backend.Interfaces.UnitOfWork;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
+using Backend.Dtos;
 
 namespace Backend.Services
 {

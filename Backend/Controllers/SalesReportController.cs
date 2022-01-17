@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
 using Backend.Models.ViewModels;
