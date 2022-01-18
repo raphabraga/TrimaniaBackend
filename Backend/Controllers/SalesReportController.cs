@@ -1,13 +1,9 @@
-using System;
 using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
-using Backend.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -33,18 +29,10 @@ namespace Backend.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            try
-            {
-                string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-                User requestingUser = _userService.GetUserByLogin(login);
-                return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,
-                    filter.EndDate, filter.UserFilter, filter.StatusFilter));
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
-            }
+            string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+            User requestingUser = _userService.GetUserByLogin(login);
+            return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,
+                filter.EndDate, filter.UserFilter, filter.StatusFilter));
         }
     }
 }

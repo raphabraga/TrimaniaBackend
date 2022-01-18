@@ -1,10 +1,6 @@
-using System.Net;
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interfaces.Services;
-using Microsoft.AspNetCore.Http;
 using Backend.Dtos;
-using Backend.Models.ViewModels;
 
 namespace Backend.Controllers
 {
@@ -24,21 +20,8 @@ namespace Backend.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            try
-            {
-                string token = _userService.GetAuthenticationToken(authUser);
-                return Ok(new { token });
-            }
-            catch (InvalidOperationException e)
-            {
-                System.Console.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status502BadGateway, new ErrorMessage(e, HttpStatusCode.BadGateway));
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                System.Console.WriteLine(e.Message);
-                return Unauthorized(new ErrorMessage(e, System.Net.HttpStatusCode.Unauthorized));
-            }
+            string token = _userService.GetAuthenticationToken(authUser);
+            return Ok(new { token });
         }
     }
 }

@@ -19,6 +19,7 @@ using Backend.Migrations;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.Serializers;
+using Backend.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +98,7 @@ using (var scope = scopeFactory.CreateScope())
     if (app.Environment.IsDevelopment())
         dbInitializer.SeedData();
 }
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseAuthentication();
