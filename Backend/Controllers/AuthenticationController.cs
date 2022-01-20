@@ -16,10 +16,8 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(AuthUser authUser)
+        public IActionResult Login(AuthenticationRequest authUser)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string token = _userService.GetAuthenticationToken(authUser);
             return Ok(new { token });
         }

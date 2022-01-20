@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,10 +9,11 @@ namespace Backend.Dtos
         public string Name { get; set; }
         public string Description { get; set; }
 
-        [Range(0.01, Double.MaxValue, ErrorMessage = "Product price must be greater than than or equal to U$ 0.01.")]
+        [Range(0.01, Double.MaxValue, ErrorMessage = "{0} must be greater than than or equal to U$ {1}.")]
         public decimal? Price { get; set; }
 
-        [Range(0, Int32.MaxValue, ErrorMessage = "Stock quantity must be greater than or equal to 0.")]
+        [DisplayName("Stock quantity")]
+        [Range(0, Int32.MaxValue, ErrorMessage = "{0} must be greater than or equal to {1}.")]
         public int? StockQuantity { get; set; }
     }
 }

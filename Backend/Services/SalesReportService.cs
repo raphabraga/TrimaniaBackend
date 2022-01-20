@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Backend.Dtos;
+using Backend.ViewModels;
 using Backend.Interfaces.Services;
 using Backend.Interfaces.UnitOfWork;
 using Backend.Models;
 using Backend.Models.Enums;
-using Backend.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 

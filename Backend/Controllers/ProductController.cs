@@ -58,8 +58,6 @@ namespace Backend.Controllers
         [HttpPost]
         public IActionResult RegisterProduct([FromBody] Product newProduct)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             Product product = _productService.RegisterProduct(newProduct);
             return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
         }
@@ -67,8 +65,6 @@ namespace Backend.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateProduct(int id, [FromBody] UpdateProduct updatedProduct)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             if (_productService.GetProductById(id) == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             return Ok(_productService.UpdateProduct(id, updatedProduct));

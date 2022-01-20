@@ -80,8 +80,6 @@ namespace Backend.Controllers
         [HttpPost]
         public IActionResult AddToChart([FromBody] AddToChartRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             return Ok(new ViewItem(_orderService.AddToChart(user, request)));
@@ -100,8 +98,6 @@ namespace Backend.Controllers
         [Route("checkout")]
         public IActionResult CheckoutOrder([FromBody] Payment payment)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             return Ok(new ViewOrder(_orderService.CheckoutOrder(user, payment)));

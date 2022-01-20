@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Backend.Models.Exceptions;
-using Backend.Models.ViewModels;
+using Backend.ViewModels;
 using Microsoft.AspNetCore.Http;
 
 namespace Backend.Middlewares

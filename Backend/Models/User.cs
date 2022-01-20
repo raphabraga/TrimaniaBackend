@@ -11,34 +11,32 @@ namespace Backend.Models
         }
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Login must be provided.")]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Login must have between 3 and 20 characters.")]
+        [Required]
+        [StringLength(20, MinimumLength = 3, ErrorMessage = "{0} must have between {2} and {1} characters.")]
         [RegularExpression(@"^(?=.{3,20}$)(?![_.-])(?!.*[_.-]{2})[a-zA-Z0-9._-]+(?<![_.-])$",
-        ErrorMessage = "Login must consist of letter, numbers and (-, . _)")]
+        ErrorMessage = "{0} must consist of letters, numbers and (-, . _)")]
         public string Login { get; set; }
 
-        [Required(ErrorMessage = "Name must be provided.")]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Name must have between 3 and 50 charaters.")]
+        [Required]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "{0} must have between {2} and {1} characters.")]
         [RegularExpression(@"^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$",
-        ErrorMessage = "Name entered has not allowed character.")]
+        ErrorMessage = "{0} entered has not allowed characters.")]
         public string Name { get; set; }
         public string Role { get; set; } = "Customer";
 
-        [Required(ErrorMessage = "Password must be provided.")]
+        [Required]
         [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$",
-        ErrorMessage = "Password must have at least eight characters, at least one letter, one number and one special character")]
+        ErrorMessage = "{0} must have at least eight characters, at least one letter, one number and one special character")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "CPF must be provided.")]
+        [Required]
         [RegularExpression(@"^(([0-9]{3}.[0-9]{3}.[0-9]{3}-[0-9]{2})|([0-9]{11}))$",
-        ErrorMessage = "CPF must follow one of the following pattern: 123.456.789-10 or 12345678910")]
+        ErrorMessage = "{0} must follow one of the following pattern: 123.456.789-10 or 12345678910")]
         public string Cpf { get; set; }
 
-        [Required(ErrorMessage = "Email must be provided.")]
-        [EmailAddress(ErrorMessage = "Valid e-mail must be provided.")]
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }
-
-        [DataType(DataType.Date)]
         public DateTime? Birthday { get; set; }
 
         [DataType(DataType.Date)]

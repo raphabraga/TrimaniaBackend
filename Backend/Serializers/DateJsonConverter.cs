@@ -10,15 +10,26 @@ namespace Backend.Serializers
         public override DateTime Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
-            JsonSerializerOptions options) =>
-                DateTime.ParseExact(reader.GetString(),
+            JsonSerializerOptions options)
+        {
+            try
+            {
+                return DateTime.ParseExact(reader.GetString(),
                     "MM/dd/yyyy", CultureInfo.InvariantCulture);
+            }
+            catch (FormatException e)
+            {
+                throw new JsonException(e.Message);
+            }
+        }
 
         public override void Write(
             Utf8JsonWriter writer,
             DateTime dateTimeValue,
             JsonSerializerOptions options) =>
                 writer.WriteStringValue(dateTimeValue.ToString(
-                    "MM/dd/yyyy", CultureInfo.InvariantCulture));
+                   "MM/dd/yyyy", CultureInfo.InvariantCulture));
+
     }
+
 }

@@ -5,11 +5,11 @@ namespace Backend.Dtos
 {
     public class AddToChartRequest
     {
-        [Required(ErrorMessage = "Product ID must be provided.")]
+        [Required]
         public int? ProductId { get; set; }
 
-        [Required(ErrorMessage = "Product quantity must be provided.")]
-        [Range(1, Int32.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]
+        [Required]
+        [Range(1, Int32.MaxValue, ErrorMessage = "{0} must be greater than {1}.")]
         public int? Quantity { get; set; }
     }
 }

@@ -103,7 +103,7 @@ namespace Backend.Services
             }
         }
 
-        public string GetAuthenticationToken(AuthUser authUser)
+        public string GetAuthenticationToken(AuthenticationRequest authUser)
         {
             try
             {

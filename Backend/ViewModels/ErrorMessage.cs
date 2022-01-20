@@ -1,7 +1,7 @@
 using System.Net;
 using System;
 
-namespace Backend.Models.ViewModels
+namespace Backend.ViewModels
 {
     public class ErrorMessage
     {

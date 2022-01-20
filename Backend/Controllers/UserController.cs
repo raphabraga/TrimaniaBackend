@@ -53,8 +53,6 @@ namespace Backend.Controllers
         [HttpPost]
         public IActionResult NewUser([FromBody] User user)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             _userService.CreateUser(user);
             return CreatedAtAction(nameof(UserById), new { id = user.Id }, new ViewUser(user));
         }
@@ -62,8 +60,6 @@ namespace Backend.Controllers
         [HttpPut]
         public IActionResult UpdateUser([FromBody] UpdateUser userUpdate)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             if (user == null)
