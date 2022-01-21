@@ -25,10 +25,8 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult SalesReport([FromBody] ReportFilter filter)
+        public IActionResult SalesReport([FromBody] ReportRequest filter)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User requestingUser = _userService.GetUserByLogin(login);
             return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,

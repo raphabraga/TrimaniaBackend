@@ -5,7 +5,7 @@ using Backend.Models.Enums;
 
 namespace Backend.Dtos
 {
-    public class ReportFilter
+    public class ReportRequest
     {
         [DataType(DataType.Date)]
         public DateTime StartDate { get; set; }

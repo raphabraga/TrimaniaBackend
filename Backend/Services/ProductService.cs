@@ -80,7 +80,7 @@ namespace Backend.Services
             }
         }
 
-        public Product UpdateProduct(int id, UpdateProduct updateProduct)
+        public Product UpdateProduct(int id, UpdateProductRequest updateProduct)
         {
             try
             {

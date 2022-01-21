@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Backend.ViewModels;
 
-namespace Backend.Dtos
+namespace Backend.ViewModels
 {
     public class SalesReport
     {

@@ -103,7 +103,7 @@ namespace Backend.Services
             }
         }
 
-        public string GetAuthenticationToken(AuthUser authUser)
+        public string GetAuthenticationToken(AuthenticationRequest authUser)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace Backend.Services
             }
         }
 
-        public User UpdateUser(int id, UpdateUser userUpdate)
+        public User UpdateUser(int id, UpdateUserRequest userUpdate)
         {
             try
             {

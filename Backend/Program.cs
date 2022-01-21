@@ -20,6 +20,10 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.Serializers;
 using Backend.Middlewares;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using Backend.Dtos;
+using Backend.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +49,6 @@ builder.Services.AddAuthentication(o =>
 builder.Services.AddControllers().AddJsonOptions(option =>
 {
     option.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    option.JsonSerializerOptions.Converters.Add(new DateJsonConverter());
     option.JsonSerializerOptions.Converters.Add(new DecimalJsonConverter());
     option.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
@@ -68,6 +71,11 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
     new MySqlServerVersion(new Version(8, 0, 27)));
 });
+builder.Services.AddMvc().AddFluentValidation();
+builder.Services.AddTransient<IValidator<CreateUserRequest>, CreateUserValidator>();
+builder.Services.AddTransient<IValidator<UpdateUserRequest>, UpdateUserValidator>();
+builder.Services.AddTransient<IValidator<CreateProductRequest>, CreateProductValidator>();
+builder.Services.AddTransient<IValidator<UpdateProductRequest>, UpdateProductValidator>();
 builder.Services.AddScoped<IDbSeeding, DbSeeding>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IUserService, UserService>();

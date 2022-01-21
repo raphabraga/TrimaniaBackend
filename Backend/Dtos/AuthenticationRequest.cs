@@ -2,12 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Dtos
 {
-    public class AuthUser
+    public class AuthenticationRequest
     {
-        [Required(ErrorMessage = "Login must be provided.")]
+        [Required]
         public string Login { get; set; }
 
-        [Required(ErrorMessage = "Password must be provided")]
+        [Required]
         public string Password { get; set; }
     }
 }

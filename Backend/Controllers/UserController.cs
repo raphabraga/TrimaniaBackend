@@ -51,19 +51,16 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult NewUser([FromBody] User user)
+        public IActionResult CreateUser([FromBody] CreateUserRequest newUser)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            User user = new User(newUser);
             _userService.CreateUser(user);
             return CreatedAtAction(nameof(UserById), new { id = user.Id }, new ViewUser(user));
         }
 
         [HttpPut]
-        public IActionResult UpdateUser([FromBody] UpdateUser userUpdate)
+        public IActionResult UpdateUser([FromBody] UpdateUserRequest userUpdate)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);
             if (user == null)

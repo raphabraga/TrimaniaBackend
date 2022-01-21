@@ -1,5 +1,7 @@
 using System;
+using System.Text.Json.Serialization;
 using Backend.Models;
+using Backend.Serializers;
 
 namespace Backend.ViewModels
 {
@@ -11,6 +13,8 @@ namespace Backend.ViewModels
         public string Name { get; set; }
         public string Cpf { get; set; }
         public string Email { get; set; }
+
+        [JsonConverter(typeof(DateJsonConverter))]
         public DateTime? Birthday { get; set; }
         public Address Address { get; set; }
         public ViewUser(User user)
