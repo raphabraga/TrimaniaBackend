@@ -12,15 +12,8 @@ namespace Backend.Serializers
             Type typeToConvert,
             JsonSerializerOptions options)
         {
-            try
-            {
-                return DateTime.ParseExact(reader.GetString(),
-                    "MM/dd/yyyy", CultureInfo.InvariantCulture);
-            }
-            catch (FormatException e)
-            {
-                throw new JsonException(e.Message);
-            }
+            return DateTime.ParseExact(reader.GetString(),
+                "MM/dd/yyyy", CultureInfo.InvariantCulture);
         }
 
         public override void Write(

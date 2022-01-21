@@ -4,7 +4,7 @@ using Backend.Models.Enums;
 
 namespace Backend.Dtos
 {
-    public class Payment
+    public class PaymentRequest
     {
         [EnumDataType(typeof(PaymentMethod))]
         [Required]

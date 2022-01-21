@@ -10,15 +10,15 @@ namespace Backend.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IUserService _userService;
-        public AuthenticationController(IUserService uService)
+        public AuthenticationController(IUserService userService)
         {
-            _userService = uService;
+            _userService = userService;
         }
 
         [HttpPost]
-        public IActionResult Login(AuthenticationRequest authUser)
+        public IActionResult Login(AuthenticationRequest authenticationRequest)
         {
-            string token = _userService.GetAuthenticationToken(authUser);
+            string token = _userService.GetAuthenticationToken(authenticationRequest);
             return Ok(new { token });
         }
     }

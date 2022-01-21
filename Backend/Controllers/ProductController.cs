@@ -56,14 +56,15 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterProduct([FromBody] Product newProduct)
+        public IActionResult RegisterProduct([FromBody] CreateProductRequest newProduct)
         {
-            Product product = _productService.RegisterProduct(newProduct);
+            var product = new Product(newProduct);
+            _productService.RegisterProduct(product);
             return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] UpdateProduct updatedProduct)
+        public IActionResult UpdateProduct(int id, [FromBody] UpdateProductRequest updatedProduct)
         {
             if (_productService.GetProductById(id) == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));

@@ -12,7 +12,7 @@ namespace Backend.Interfaces.Services
         public abstract User CreateUser(User user);
         public abstract string GetAuthenticationToken(AuthenticationRequest user);
         public abstract void DeleteUser(int id);
-        public abstract User UpdateUser(int id, UpdateUser userUpdate);
+        public abstract User UpdateUser(int id, UpdateUserRequest userUpdate);
 
     }
 }

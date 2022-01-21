@@ -239,7 +239,7 @@ namespace Backend.Services
             }
         }
 
-        public Order CheckoutOrder(User user, Payment payment)
+        public Order CheckoutOrder(User user, PaymentRequest payment)
         {
             try
             {
@@ -257,7 +257,7 @@ namespace Backend.Services
             }
         }
 
-        public void ProcessPurchase(Order order, Payment payment)
+        public void ProcessPurchase(Order order, PaymentRequest payment)
         {
             // TODO: Improve this method
             int processingTime = 0;

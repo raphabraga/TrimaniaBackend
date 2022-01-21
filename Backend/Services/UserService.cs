@@ -145,7 +145,7 @@ namespace Backend.Services
             }
         }
 
-        public User UpdateUser(int id, UpdateUser userUpdate)
+        public User UpdateUser(int id, UpdateUserRequest userUpdate)
         {
             try
             {

@@ -96,7 +96,7 @@ namespace Backend.Controllers
 
         [HttpPut]
         [Route("checkout")]
-        public IActionResult CheckoutOrder([FromBody] Payment payment)
+        public IActionResult CheckoutOrder([FromBody] PaymentRequest payment)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = _userService.GetUserByLogin(login);

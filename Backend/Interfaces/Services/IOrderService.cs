@@ -15,7 +15,7 @@ namespace Backend.Interfaces.Services
         public abstract ChartItem RemoveFromChart(User user, int id);
         public abstract ChartItem ChangeItemQuantity(User user, int id, string sign);
         public abstract Order CancelOrder(User user);
-        public abstract Order CheckoutOrder(User user, Payment payment);
-        public abstract void ProcessPurchase(Order order, Payment payment);
+        public abstract Order CheckoutOrder(User user, PaymentRequest payment);
+        public abstract void ProcessPurchase(Order order, PaymentRequest payment);
     }
 }
