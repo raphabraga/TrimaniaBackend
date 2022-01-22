@@ -1,7 +1,7 @@
 using System;
+using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Interfaces.Repositories;
-using Backend.Interfaces.UnitOfWork;
 using Backend.Models;
 
 namespace Backend.Repositories
@@ -70,9 +70,9 @@ namespace Backend.Repositories
             _applicationContext = context;
         }
 
-        public void Commit()
+        public async Task Commit()
         {
-            _applicationContext.SaveChanges();
+            await _applicationContext.SaveChangesAsync();
         }
 
         private bool disposed = false;

@@ -9,6 +9,7 @@ using Backend.Models.Enums;
 using Backend.Utils;
 using Backend.ViewModels;
 using Backend.Dtos;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -26,64 +27,66 @@ namespace Backend.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
-        public IActionResult GetUsers([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
+        public async Task<IActionResult> GetUsers([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            return Ok(_userService.Query(filter: null, sort, page).Select(user => new ViewUser(user)));
+            var users = await _userService.Query(filter: null, sort, page);
+            return Ok(users.Select(user => new ViewUser(user)));
         }
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
         [Route("search")]
-        public IActionResult SearchUsers([FromQuery(Name = "filter")] string filter,
+        public async Task<IActionResult> SearchUsers([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            return Ok(_userService.Query(filter, sort, page).Select(user => new ViewUser(user)));
+            var users = await _userService.Query(filter, sort, page);
+            return Ok(users.Select(user => new ViewUser(user)));
         }
 
         [HttpGet("{id}")]
-        public IActionResult UserById(int id)
+        public async Task<IActionResult> UserById(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User requestingUser = _userService.GetUserByLogin(login);
-            User user = _userService.GetUserById(requestingUser, id);
+            User requestingUser = await _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserById(requestingUser, id);
             return Ok(new ViewUser(user));
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult CreateUser([FromBody] CreateUserRequest newUser)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest newUser)
         {
             User user = new User(newUser);
-            _userService.CreateUser(user);
+            await _userService.CreateUser(user);
             return CreatedAtAction(nameof(UserById), new { id = user.Id }, new ViewUser(user));
         }
 
         [HttpPut]
-        public IActionResult UpdateUser([FromBody] UpdateUserRequest userUpdate)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest userUpdate)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserByLogin(login);
             if (user == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
-            return Ok(new ViewUser(_userService.UpdateUser(user.Id, userUpdate)));
+            return Ok(new ViewUser(await _userService.UpdateUser(user.Id, userUpdate)));
         }
 
         [HttpDelete]
-        public IActionResult DeleteUser()
+        public async Task<IActionResult> DeleteUser()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserByLogin(login);
             if (user == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
-            _userService.DeleteUser(user.Id);
+            await _userService.DeleteUser(user.Id);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Administrator")]
-        public IActionResult DeleteById(int id)
+        public async Task<IActionResult> DeleteById(int id)
         {
-            _userService.DeleteUser(id);
+            await _userService.DeleteUser(id);
             return NoContent();
         }
     }

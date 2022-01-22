@@ -7,11 +7,12 @@ using Backend.Interfaces.Services;
 using Backend.Utils;
 using Backend.Models.Exceptions;
 using Backend.Models.Enums;
-using Backend.Interfaces.UnitOfWork;
+using Backend.Interfaces.Repositories;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
 using Backend.Dtos;
+using System.Threading.Tasks;
 
 namespace Backend.Services
 {
@@ -25,11 +26,11 @@ namespace Backend.Services
             _tokenService = tService;
         }
 
-        public User GetUserById(User requestingUser, int id)
+        public async Task<User> GetUserById(User requestingUser, int id)
         {
             try
             {
-                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
+                User user = await _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
                 if (user == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
                 if (requestingUser.Role != "Administrator" && requestingUser.Login != user.Login)
@@ -42,11 +43,11 @@ namespace Backend.Services
             }
         }
 
-        public User GetUserByLogin(string login)
+        public async Task<User> GetUserByLogin(string login)
         {
             try
             {
-                return _unitOfWork.UserRepository.GetBy(user => user.Login == login);
+                return await _unitOfWork.UserRepository.GetBy(user => user.Login == login);
             }
             catch (InvalidOperationException)
             {
@@ -54,7 +55,7 @@ namespace Backend.Services
             }
         }
 
-        public List<User> Query(string filter, string sort, int? queryPage)
+        public async Task<List<User>> Query(string filter, string sort, int? queryPage)
         {
             try
             {
@@ -71,7 +72,8 @@ namespace Backend.Services
                     orderBy = q => q.OrderBy(user => user.Name);
                 else if (sort == "desc")
                     orderBy = q => q.OrderByDescending(user => user.Name);
-                return _unitOfWork.UserRepository.Get(predicateFilter, orderBy, includes, queryPage).ToList();
+                var users = await _unitOfWork.UserRepository.Get(predicateFilter, orderBy, includes, queryPage);
+                return users.ToList();
             }
             catch (InvalidOperationException)
             {
@@ -79,22 +81,22 @@ namespace Backend.Services
             }
         }
 
-        public User CreateUser(User user)
+        public async Task<User> CreateUser(User user)
         {
             user.Password = BC.HashPassword(user.Password);
             try
             {
                 var exceptions = new List<Exception>();
-                if (_unitOfWork.UserRepository.GetBy(u => u.Login == user.Login) != null)
+                if (await _unitOfWork.UserRepository.GetBy(u => u.Login == user.Login) != null)
                     exceptions.Add(new UsedLoginException(ErrorUtils.GetMessage(ErrorType.UniqueUserName)));
-                if (_unitOfWork.UserRepository.GetBy(u => u.Email == user.Email) != null)
+                if (await _unitOfWork.UserRepository.GetBy(u => u.Email == user.Email) != null)
                     exceptions.Add(new UsedEmailException(ErrorUtils.GetMessage(ErrorType.UniqueUserEmail)));
-                if (_unitOfWork.UserRepository.GetBy(u => u.Cpf == user.Cpf) != null)
+                if (await _unitOfWork.UserRepository.GetBy(u => u.Cpf == user.Cpf) != null)
                     exceptions.Add(new UsedCpfException(ErrorUtils.GetMessage(ErrorType.UniqueUserCpf)));
                 if (exceptions.Count > 0)
                     throw new AggregateException(exceptions);
                 _unitOfWork.UserRepository.Insert(user);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return user;
             }
             catch (InvalidOperationException)
@@ -103,11 +105,11 @@ namespace Backend.Services
             }
         }
 
-        public string GetAuthenticationToken(AuthenticationRequest authUser)
+        public async Task<string> GetAuthenticationToken(AuthenticationRequest authUser)
         {
             try
             {
-                User user = GetUserByLogin(authUser.Login);
+                User user = await GetUserByLogin(authUser.Login);
                 if (user == null)
                     throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.IncorrectLoginOrPassword));
                 if (!BC.Verify(authUser.Password, user.Password))
@@ -120,19 +122,19 @@ namespace Backend.Services
             }
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUser(int id)
         {
             try
             {
-                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id);
+                User user = await _unitOfWork.UserRepository.GetBy(user => user.Id == id);
                 if (user == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.UserIdNotFound));
-                if (_unitOfWork.OrderRepository.GetBy(order => order.Client.Id == id) != null)
+                if (await _unitOfWork.OrderRepository.GetBy(order => order.Client.Id == id) != null)
                     throw new NotAllowedDeletionException(ErrorUtils.GetMessage(ErrorType.DeleteUserWithRegisteredOrder));
                 else
                 {
                     _unitOfWork.UserRepository.Delete(id);
-                    _unitOfWork.Commit();
+                    await _unitOfWork.Commit();
                 }
             }
             catch (InvalidOperationException)
@@ -145,11 +147,11 @@ namespace Backend.Services
             }
         }
 
-        public User UpdateUser(int id, UpdateUserRequest userUpdate)
+        public async Task<User> UpdateUser(int id, UpdateUserRequest userUpdate)
         {
             try
             {
-                User user = _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
+                User user = await _unitOfWork.UserRepository.GetBy(user => user.Id == id, "Address");
                 user.Name = string.IsNullOrEmpty(userUpdate.Name) ? user.Name : userUpdate.Name;
                 if (userUpdate.Password != null)
                     user.Password = BC.HashPassword(userUpdate.Password);
@@ -177,7 +179,7 @@ namespace Backend.Services
                         user.Address.Number = (userUpdate?.Address?.Number == null) ? user?.Address?.Number : userUpdate?.Address?.Number;
                     }
                 }
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return user;
             }
             catch (InvalidOperationException)

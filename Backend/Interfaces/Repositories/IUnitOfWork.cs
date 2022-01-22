@@ -1,8 +1,8 @@
 using System;
-using Backend.Interfaces.Repositories;
+using System.Threading.Tasks;
 using Backend.Models;
 
-namespace Backend.Interfaces.UnitOfWork
+namespace Backend.Interfaces.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {
@@ -11,7 +11,7 @@ namespace Backend.Interfaces.UnitOfWork
         IRepository<Order> OrderRepository { get; }
         IRepository<Address> AddressRepository { get; }
         IRepository<ChartItem> ChartItemRepository { get; }
-        public void Commit();
+        public Task Commit();
 
     }
 }

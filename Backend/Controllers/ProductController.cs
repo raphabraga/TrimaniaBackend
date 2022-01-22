@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
@@ -24,10 +25,10 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult GetProducts([FromQuery(Name = "sort")] string sort,
+        public async Task<IActionResult> GetProducts([FromQuery(Name = "sort")] string sort,
         [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = _productService.GetProducts(filter: null, sort, page);
+            List<Product> products = await _productService.GetProducts(filter: null, sort, page);
             if (products == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
             return Ok(products);
@@ -36,10 +37,10 @@ namespace Backend.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("search")]
-        public IActionResult SearchProducts([FromQuery(Name = "filter")] string filter,
+        public async Task<IActionResult> SearchProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = _productService.GetProducts(filter, sort, page);
+            List<Product> products = await _productService.GetProducts(filter, sort, page);
             if (products == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
             return Ok(products);
@@ -47,36 +48,36 @@ namespace Backend.Controllers
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public IActionResult ProductsById(int id)
+        public async Task<IActionResult> ProductsById(int id)
         {
-            Product product = _productService.GetProductById(id);
+            Product product = await _productService.GetProductById(id);
             if (product == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             return Ok(product);
         }
 
         [HttpPost]
-        public IActionResult RegisterProduct([FromBody] CreateProductRequest newProduct)
+        public async Task<IActionResult> RegisterProduct([FromBody] CreateProductRequest newProduct)
         {
             var product = new Product(newProduct);
-            _productService.RegisterProduct(product);
+            await _productService.RegisterProduct(product);
             return CreatedAtAction(nameof(ProductsById), new { id = product.Id }, product);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] UpdateProductRequest updatedProduct)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest updatedProduct)
         {
-            if (_productService.GetProductById(id) == null)
+            if (await _productService.GetProductById(id) == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
-            return Ok(_productService.UpdateProduct(id, updatedProduct));
+            return Ok(await _productService.UpdateProduct(id, updatedProduct));
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            if (_productService.GetProductById(id) == null)
+            if (await _productService.GetProductById(id) == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
-            _productService.DeleteProduct(id);
+            await _productService.DeleteProduct(id);
             return NoContent();
         }
 

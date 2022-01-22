@@ -4,11 +4,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using Backend.Dtos;
 using Backend.Interfaces.Services;
-using Backend.Interfaces.UnitOfWork;
+using Backend.Interfaces.Repositories;
 using Backend.Models;
 using Backend.Models.Enums;
 using Backend.Models.Exceptions;
 using Backend.Utils;
+using System.Threading.Tasks;
 
 namespace Backend.Services
 {
@@ -21,11 +22,11 @@ namespace Backend.Services
             _unitOfWork = unitOfWork;
         }
 
-        public Product GetProductByName(string name)
+        public async Task<Product> GetProductByName(string name)
         {
             try
             {
-                return _unitOfWork.ProductRepository.GetBy(product => product.Name == name);
+                return await _unitOfWork.ProductRepository.GetBy(product => product.Name == name);
             }
             catch (InvalidOperationException)
             {
@@ -33,18 +34,18 @@ namespace Backend.Services
             }
         }
 
-        public Product GetProductById(int id)
+        public async Task<Product> GetProductById(int id)
         {
             try
             {
-                return _unitOfWork.ProductRepository.GetBy(product => product.Id == id);
+                return await _unitOfWork.ProductRepository.GetBy(product => product.Id == id);
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
         }
-        public List<Product> GetProducts(string filter, string sort, int? queryPage)
+        public async Task<List<Product>> GetProducts(string filter, string sort, int? queryPage)
         {
             try
             {
@@ -57,21 +58,22 @@ namespace Backend.Services
                 else if (sort == "desc")
                     orderBy = q => q.OrderByDescending(product => product.Name);
 
-                return _unitOfWork.ProductRepository.Get(predicateFilter, orderBy, null, queryPage).ToList();
+                var products = await _unitOfWork.ProductRepository.Get(predicateFilter, orderBy, null, queryPage);
+                return products.ToList();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
         }
-        public Product RegisterProduct(Product product)
+        public async Task<Product> RegisterProduct(Product product)
         {
             try
             {
-                if (GetProductByName(product.Name) != null)
+                if (await GetProductByName(product.Name) != null)
                     throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
                 _unitOfWork.ProductRepository.Insert(product);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -80,19 +82,19 @@ namespace Backend.Services
             }
         }
 
-        public Product UpdateProduct(int id, UpdateProductRequest updateProduct)
+        public async Task<Product> UpdateProduct(int id, UpdateProductRequest updateProductRequest)
         {
             try
             {
-                Product product = GetProductByName(updateProduct.Name);
-                if (product != null && product.Id != id)
+                Product productUpdate = await GetProductByName(updateProductRequest.Name);
+                if (productUpdate != null && productUpdate?.Id != id)
                     throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
-                product = GetProductById(id);
-                product.Name = string.IsNullOrEmpty(updateProduct.Name) ? product.Name : updateProduct.Name;
-                product.Price = updateProduct.Price == null ? product.Price : updateProduct.Price.Value;
-                product.StockQuantity = updateProduct.StockQuantity == null ? product.StockQuantity : updateProduct.StockQuantity;
-                product.Description = updateProduct.Description == null ? product.Description : updateProduct.Description;
-                _unitOfWork.Commit();
+                var product = await GetProductById(id);
+                product.Name = string.IsNullOrEmpty(productUpdate.Name) ? product.Name : productUpdate.Name;
+                product.Price = productUpdate.Price == null ? product.Price : productUpdate.Price.Value;
+                product.StockQuantity = productUpdate.StockQuantity == null ? product.StockQuantity : productUpdate.StockQuantity;
+                product.Description = productUpdate.Description == null ? product.Description : productUpdate.Description;
+                await _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -101,15 +103,15 @@ namespace Backend.Services
             }
         }
 
-        public Product UpdateProductQuantity(int id, int amount)
+        public async Task<Product> UpdateProductQuantity(int id, int amount)
         {
             try
             {
-                Product product = GetProductById(id);
+                Product product = await GetProductById(id);
                 if (product.StockQuantity < amount)
                     throw new OutOfStockException(ErrorUtils.GetMessage(ErrorType.InsufficientProductInStock));
                 product.StockQuantity -= amount;
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return product;
             }
             catch (InvalidOperationException)
@@ -118,15 +120,15 @@ namespace Backend.Services
             }
         }
 
-        public void DeleteProduct(int id)
+        public async Task DeleteProduct(int id)
         {
             try
             {
-                Product product = GetProductById(id);
-                if (_unitOfWork.ChartItemRepository.GetBy(item => item.Product.Id == id) != null)
+                Product product = await GetProductById(id);
+                if (await _unitOfWork.ChartItemRepository.GetBy(item => item.Product.Id == id) != null)
                     throw new NotAllowedDeletionException(ErrorUtils.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
                 _unitOfWork.ProductRepository.Delete(id);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
             }
             catch (InvalidOperationException)
             {

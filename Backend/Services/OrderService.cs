@@ -8,7 +8,7 @@ using Backend.Interfaces.Services;
 using Backend.Models.Exceptions;
 using Backend.Utils;
 using Backend.Models.Enums;
-using Backend.Interfaces.UnitOfWork;
+using Backend.Interfaces.Repositories;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Backend.Dtos;
@@ -25,7 +25,7 @@ namespace Backend.Services
             _unitOfWork = unitOfWork;
         }
 
-        public List<Order> GetOrders(User user, string sort, int? queryPage)
+        public async Task<List<Order>> GetOrders(User user, string sort, int? queryPage)
         {
             try
             {
@@ -37,23 +37,23 @@ namespace Backend.Services
                     orderBy = q => q.OrderBy(order => order.CreationDate);
                 else if (sort == "desc")
                     orderBy = q => q.OrderByDescending(order => order.CreationDate);
-
-                return _unitOfWork.OrderRepository.Get(predicateFilter, orderBy, includes, queryPage).ToList();
+                var orders = await _unitOfWork.OrderRepository.Get(predicateFilter, orderBy, includes, queryPage);
+                return orders.ToList();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
         }
-        public Order GetOrderById(User requestingUser, int id)
+        public async Task<Order> GetOrderById(User requestingUser, int id)
         {
             try
             {
                 Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
                 order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
 
-                Order order = _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null)
-                .FirstOrDefault(order => order.Id == id);
+                var userOrder = await _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null);
+                var order = userOrder.FirstOrDefault(order => order.Id == id);
                 if (requestingUser.Role != "Administrator" && order?.Client?.Id != requestingUser.Id)
                     throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.NotAuthorized));
                 return order;
@@ -63,31 +63,31 @@ namespace Backend.Services
                 throw;
             }
         }
-        public Order GetOpenOrder(User user)
+        public async Task<Order> GetOpenOrder(User user)
         {
             try
             {
-                return GetOrders(user, "desc", null).FirstOrDefault(order =>
-                order.Status == OrderStatus.Open);
+                var userOrders = await GetOrders(user, "desc", null);
+                return userOrders.FirstOrDefault(order => order.Status == OrderStatus.Open);
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
         }
-        public List<Order> GetInProgressOrders(User user)
+        public async Task<List<Order>> GetInProgressOrders(User user)
         {
             try
             {
-                return GetOrders(user, "desc", null).Where(order =>
-                order.Status == OrderStatus.InProgress).ToList();
+                var userOrders = await GetOrders(user, "desc", null);
+                return userOrders.Where(order => order.Status == OrderStatus.InProgress).ToList();
             }
             catch (InvalidOperationException)
             {
                 throw;
             }
         }
-        public Order CreateOrder(User user)
+        public async Task<Order> CreateOrder(User user)
         {
             try
             {
@@ -99,7 +99,7 @@ namespace Backend.Services
                     Items = new List<ChartItem>()
                 };
                 _unitOfWork.OrderRepository.Insert(order);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return order;
             }
             catch (InvalidOperationException)
@@ -107,16 +107,16 @@ namespace Backend.Services
                 throw;
             }
         }
-        public ChartItem AddToChart(User user, AddToChartRequest request)
+        public async Task<ChartItem> AddToChart(User user, AddToChartRequest request)
         {
             try
             {
-                if (_productService.GetProductById(request.ProductId.Value) == null)
+                if (await _productService.GetProductById(request.ProductId.Value) == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
-                Order order = GetOpenOrder(user);
+                Order order = await GetOpenOrder(user);
                 if (order == null)
-                    order = CreateOrder(user);
-                Product product = _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
+                    order = await CreateOrder(user);
+                Product product = await _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
                 order.TotalValue += product.Price.Value * request.Quantity.Value;
                 ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == request.ProductId.Value);
                 if (item == null)
@@ -132,7 +132,7 @@ namespace Backend.Services
                 else
                     item.Quantity += request.Quantity.Value;
                 _unitOfWork.OrderRepository.Update(order);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return item;
             }
             catch (InvalidOperationException)
@@ -145,11 +145,11 @@ namespace Backend.Services
             }
         }
 
-        public ChartItem RemoveFromChart(User user, int id)
+        public async Task<ChartItem> RemoveFromChart(User user, int id)
         {
             try
             {
-                Order order = GetOpenOrder(user);
+                Order order = await GetOpenOrder(user);
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.RemoveItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
@@ -161,8 +161,8 @@ namespace Backend.Services
                     order.TotalValue -= item.Price * item.Quantity;
                     if (order.Items.Count == 0)
                         _unitOfWork.OrderRepository.Delete(order.Id);
-                    _productService.UpdateProductQuantity(id, -item.Quantity);
-                    _unitOfWork.Commit();
+                    await _productService.UpdateProductQuantity(id, -item.Quantity);
+                    await _unitOfWork.Commit();
                     return item;
                 }
             }
@@ -172,11 +172,11 @@ namespace Backend.Services
             }
         }
 
-        public ChartItem ChangeItemQuantity(User user, int id, string sign)
+        public async Task<ChartItem> ChangeItemQuantity(User user, int id, string sign)
         {
             try
             {
-                Order order = GetOpenOrder(user);
+                Order order = await GetOpenOrder(user);
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemFromEmptyChart));
                 ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
@@ -186,7 +186,7 @@ namespace Backend.Services
                 {
                     if (sign == "Increase")
                     {
-                        _productService.UpdateProductQuantity(id, 1);
+                        await _productService.UpdateProductQuantity(id, 1);
                         item.Quantity++;
                         order.TotalValue += item.Price;
                     }
@@ -194,17 +194,17 @@ namespace Backend.Services
                     {
                         if (item.Quantity == 1)
                         {
-                            RemoveFromChart(user, id);
+                            await RemoveFromChart(user, id);
                             item.Quantity--;
                         }
                         else
                         {
                             item.Quantity--;
                             order.TotalValue -= item.Price;
-                            _productService.UpdateProductQuantity(id, -1);
+                            await _productService.UpdateProductQuantity(id, -1);
                         }
                     }
-                    _unitOfWork.Commit();
+                    await _unitOfWork.Commit();
                     return item;
                 }
             }
@@ -217,20 +217,20 @@ namespace Backend.Services
                 throw;
             }
         }
-        public Order CancelOrder(User user)
+        public async Task<Order> CancelOrder(User user)
         {
             try
             {
-                Order order = GetOpenOrder(user);
+                Order order = await GetOpenOrder(user);
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CancelEmptyChart));
                 order.Status = OrderStatus.Cancelled;
                 order.CancellationDate = DateTime.Now;
-                order.Items.ForEach(item =>
+                order.Items.ForEach(async item =>
                 {
-                    _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
+                    await _productService.UpdateProductQuantity(item.Product.Id, -item.Quantity);
                 });
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return order;
             }
             catch (InvalidOperationException)
@@ -239,16 +239,16 @@ namespace Backend.Services
             }
         }
 
-        public Order CheckoutOrder(User user, PaymentRequest payment)
+        public async Task<Order> CheckoutOrder(User user, PaymentRequest payment)
         {
             try
             {
-                Order order = GetOpenOrder(user);
+                Order order = await GetOpenOrder(user);
                 if (order == null)
                     throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CheckoutEmptyChart));
                 order.Status = OrderStatus.InProgress;
-                _unitOfWork.Commit();
-                ProcessPurchase(order, payment);
+                await _unitOfWork.Commit();
+                await ProcessPurchase(order, payment);
                 return order;
             }
             catch (InvalidOperationException)
@@ -257,7 +257,7 @@ namespace Backend.Services
             }
         }
 
-        public void ProcessPurchase(Order order, PaymentRequest payment)
+        public async Task ProcessPurchase(Order order, PaymentRequest payment)
         {
             // TODO: Improve this method
             int processingTime = 0;
@@ -267,13 +267,13 @@ namespace Backend.Services
                     processingTime = 0; // instant processing
                     break;
                 case PaymentMethod.CreditCard:
-                    processingTime = 1 * 1000 * 60; // 1min processing
+                    processingTime = 1 * 1000 * 30; // 30s processing
                     break;
                 case PaymentMethod.BankSlip:
-                    processingTime = 5 * 1000 * 60; // 5min processing
+                    processingTime = 1 * 1000 * 60; // 1min processing
                     break;
             }
-            Task.Delay(processingTime).ContinueWith(_ =>
+            await Task.Delay(processingTime).ContinueWith(_ =>
             {
                 try
                 {

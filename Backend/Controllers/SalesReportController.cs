@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
@@ -25,11 +26,11 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult SalesReport([FromBody] ReportRequest filter)
+        public async Task<IActionResult> SalesReport([FromBody] ReportRequest filter)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User requestingUser = _userService.GetUserByLogin(login);
-            return Ok(_salesReportService.GenerateReport(requestingUser, filter.StartDate,
+            User requestingUser = await _userService.GetUserByLogin(login);
+            return Ok(await _salesReportService.GenerateReport(requestingUser, filter.StartDate,
                 filter.EndDate, filter.UserFilter, filter.StatusFilter));
         }
     }

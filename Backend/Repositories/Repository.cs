@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,7 @@ namespace Backend.Repositories
             }
         }
 
-        public IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
+        public async Task<IEnumerable<T>> Get(Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes = null,
             int? page = null)
@@ -38,22 +39,17 @@ namespace Backend.Repositories
             IQueryable<T> query = _dbSet;
             if (filter != null)
                 query = query.Where(filter);
-
             if (includes != null)
-            {
                 query = includes(query);
-            }
-
             if (orderBy != null)
                 query = orderBy(query);
-
             if (page != null && page > 0)
-                return query.Skip(numResults * (page.GetValueOrDefault() - 1)).Take(numResults).ToList();
+                return await query.Skip(numResults * (page.GetValueOrDefault() - 1)).Take(numResults).ToListAsync();
             else
-                return query.ToList();
+                return await query.ToListAsync();
         }
 
-        public T GetBy(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        public async Task<T> GetBy(Expression<Func<T, bool>> predicate, string includeProperties = "")
         {
             IQueryable<T> query = _dbSet;
             foreach (var includeProperty in includeProperties.Split
@@ -61,7 +57,7 @@ namespace Backend.Repositories
             {
                 query = query.Include(includeProperty);
             }
-            return query.FirstOrDefault(predicate);
+            return await query.FirstOrDefaultAsync(predicate);
         }
 
         public void Insert(T entity)
