@@ -11,6 +11,10 @@ services:
       - db-data:/var/lib/mysql
       - ./Db/DbScript.sh:/docker-entrypoint-initdb.d/init-database.sh
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: trimaniadb
@@ -22,6 +26,9 @@ services:
       context: ./Backend
       dockerfile: Dockerfile.prod
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - 80:5044
 volumes:

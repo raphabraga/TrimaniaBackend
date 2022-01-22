@@ -103,8 +103,9 @@ using (var scope = scopeFactory.CreateScope())
     var dbInitializer = scope.ServiceProvider.GetService<IDbInitializer>();
     dbInitializer.Initialize();
     dbInitializer.SeedAdmin();
-    if (app.Environment.IsDevelopment())
-        dbInitializer.SeedData();
+    // TODO: For production uncomment the line bellow
+    // if (app.Environment.IsDevelopment())
+    dbInitializer.SeedData();
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseResponseCompression();

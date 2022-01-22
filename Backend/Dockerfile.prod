@@ -10,5 +10,4 @@ WORKDIR /Backend
 COPY --from=BUILD_STAGE /Backend/out .
 EXPOSE 5044
 ENV ASPNETCORE_URLS=http://+:5044
-ENV ASPNETCORE_ENVIRONMENT = Production
 ENTRYPOINT ["dotnet", "Backend.dll"]
