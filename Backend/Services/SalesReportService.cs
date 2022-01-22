@@ -4,11 +4,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using Backend.ViewModels;
 using Backend.Interfaces.Services;
-using Backend.Interfaces.UnitOfWork;
+using Backend.Interfaces.Repositories;
 using Backend.Models;
 using Backend.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Threading.Tasks;
 
 namespace Backend.Services
 {
@@ -19,7 +20,7 @@ namespace Backend.Services
         {
             _unitOfWork = unitOfWork;
         }
-        public SalesReport GenerateReport(User requestingUser, DateTime startDate, DateTime endDate,
+        public async Task<SalesReport> GenerateReport(User requestingUser, DateTime startDate, DateTime endDate,
         List<string> userFilter, List<OrderStatus> statusFilter)
         {
             // TODO: Improve this method
@@ -29,7 +30,8 @@ namespace Backend.Services
                 Expression<Func<Order, bool>> filter = (order => order.CreationDate > startDate && order.CreationDate < endDate);
                 Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes =
                 order => order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
-                List<Order> orders = _unitOfWork.OrderRepository.Get(filter, orderBy: null, includes, page: null).ToList();
+                var iNumerableOrders = await _unitOfWork.OrderRepository.Get(filter, orderBy: null, includes, page: null);
+                var orders = iNumerableOrders.ToList();
                 List<Order> OrdersFiltered = new List<Order>();
                 if (requestingUser.Role != "Administrator")
                     userFilter = new List<string> { requestingUser.Login };

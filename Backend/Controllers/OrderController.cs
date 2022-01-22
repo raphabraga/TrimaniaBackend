@@ -10,6 +10,7 @@ using Backend.Models.Enums;
 using Backend.Utils;
 using Backend.ViewModels;
 using Backend.Dtos;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -28,36 +29,37 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult OrderById(int id)
+        public async Task<IActionResult> OrderById(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
-            User requestingUser = _userService.GetUserByLogin(login);
-            Order order = _orderService.GetOrderById(requestingUser, id);
+            User requestingUser = await _userService.GetUserByLogin(login);
+            Order order = await _orderService.GetOrderById(requestingUser, id);
             if (order == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.OrderIdNotFound));
             return Ok(new ViewOrder(order));
         }
 
         [HttpGet]
-        public IActionResult OrdersByUser([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
+        public async Task<IActionResult> OrdersByUser([FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserByLogin(login);
             if (user == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
-            return Ok(_orderService.GetOrders(user, sort, page).Select(order => new ViewOrder(order)));
+            var userOrders = await _orderService.GetOrders(user, sort, page);
+            return Ok(userOrders.Select(order => new ViewOrder(order)));
         }
 
         [HttpGet]
         [Route("open")]
-        public IActionResult OpenOrder()
+        public async Task<IActionResult> OpenOrder()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserByLogin(login);
             if (user == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
-            Order order = _orderService.GetOpenOrder(user);
+            Order order = await _orderService.GetOpenOrder(user);
             if (order == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoOpenOrders));
             return Ok(new ViewOrder(order));
@@ -65,68 +67,68 @@ namespace Backend.Controllers
 
         [HttpGet]
         [Route("in-progress")]
-        public IActionResult InProgressOrder()
+        public async Task<IActionResult> InProgressOrder()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
+            User user = await _userService.GetUserByLogin(login);
             if (user == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
-            List<Order> orders = _orderService.GetInProgressOrders(user);
+            List<Order> orders = await _orderService.GetInProgressOrders(user);
             if (orders == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoInProgressOrders));
             return Ok(orders.Select(order => new ViewOrder(order)));
         }
 
         [HttpPost]
-        public IActionResult AddToChart([FromBody] AddToChartRequest request)
+        public async Task<IActionResult> AddToChart([FromBody] AddToChartRequest request)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(_orderService.AddToChart(user, request)));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewItem(await _orderService.AddToChart(user, request)));
         }
 
         [HttpPut]
         [Route("cancel")]
-        public IActionResult CancelOrder()
+        public async Task<IActionResult> CancelOrder()
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewOrder(_orderService.CancelOrder(user)));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewOrder(await _orderService.CancelOrder(user)));
         }
 
         [HttpPut]
         [Route("checkout")]
-        public IActionResult CheckoutOrder([FromBody] PaymentRequest payment)
+        public async Task<IActionResult> CheckoutOrder([FromBody] PaymentRequest payment)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewOrder(_orderService.CheckoutOrder(user, payment)));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewOrder(await _orderService.CheckoutOrder(user, payment)));
         }
 
         [HttpPut("remove-item/{id}")]
-        public IActionResult RemoveFromChart(int id)
+        public async Task<IActionResult> RemoveFromChart(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(_orderService.RemoveFromChart(user, id)));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewItem(await _orderService.RemoveFromChart(user, id)));
         }
 
         [Route("increase-item/{id}")]
         [HttpPut]
-        public IActionResult IncreaseQuantity(int id)
+        public async Task<IActionResult> IncreaseQuantity(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(_orderService.ChangeItemQuantity(user, id, "Increase")));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewItem(await _orderService.ChangeItemQuantity(user, id, "Increase")));
         }
 
         [Route("decrease-item/{id}")]
         [HttpPut]
-        public IActionResult DecreaseQuantity(int id)
+        public async Task<IActionResult> DecreaseQuantity(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            User user = _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(_orderService.ChangeItemQuantity(user, id, "decrease")));
+            User user = await _userService.GetUserByLogin(login);
+            return Ok(new ViewItem(await _orderService.ChangeItemQuantity(user, id, "decrease")));
         }
     }
 }

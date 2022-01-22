@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
 using Backend.Interfaces.Services;
-using Backend.Interfaces.UnitOfWork;
+using Backend.Interfaces.Repositories;
 using Backend.Repositories;
 using System;
 using Microsoft.Extensions.Configuration;

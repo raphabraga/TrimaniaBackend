@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interfaces.Services;
 using Backend.Dtos;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -16,9 +17,9 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(AuthenticationRequest authenticationRequest)
+        public async Task<IActionResult> Login(AuthenticationRequest authenticationRequest)
         {
-            string token = _userService.GetAuthenticationToken(authenticationRequest);
+            string token = await _userService.GetAuthenticationToken(authenticationRequest);
             return Ok(new { token });
         }
     }
