@@ -1,6 +1,6 @@
 using Backend.Models;
 
-namespace Backend.Migrations
+namespace Backend.Migrations.Seeding.Interfaces
 {
     public interface IDbSeeding
     {

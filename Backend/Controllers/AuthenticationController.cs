@@ -11,9 +11,9 @@ namespace Backend.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IUserService _userService;
-        public AuthenticationController(IUserService userService)
+        public AuthenticationController(IUserService service)
         {
-            _userService = userService;
+            _userService = service;
         }
 
         [HttpPost]

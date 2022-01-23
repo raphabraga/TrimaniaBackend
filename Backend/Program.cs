@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Backend.Data;
 using Backend.Services;
 using System.Text;
@@ -15,7 +14,6 @@ using Backend.Repositories;
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using Backend.Migrations;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.Serializers;
@@ -25,6 +23,8 @@ using FluentValidation;
 using Backend.Dtos;
 using Backend.Validators;
 using Microsoft.OpenApi.Models;
+using Backend.Migrations.Seeding.Interfaces;
+using Backend.Migrations.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 

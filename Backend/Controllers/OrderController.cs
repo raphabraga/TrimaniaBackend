@@ -22,10 +22,10 @@ namespace Backend.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;
-        public OrderController(IOrderService oService, IUserService uService)
+        public OrderController(IOrderService orderService, IUserService userService)
         {
-            _orderService = oService;
-            _userService = uService;
+            _orderService = orderService;
+            _userService = userService;
         }
 
         [HttpGet("{id}")]

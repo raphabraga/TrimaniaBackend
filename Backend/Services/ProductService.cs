@@ -22,7 +22,7 @@ namespace Backend.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Product> GetProductByName(string name)
+        private async Task<Product> GetProductByName(string name)
         {
             try
             {

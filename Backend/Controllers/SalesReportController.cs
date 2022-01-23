@@ -19,10 +19,10 @@ namespace Backend.Controllers
         private readonly ISalesReportService _salesReportService;
         private readonly IUserService _userService;
 
-        public SalesReportController(ISalesReportService rService, IUserService uService)
+        public SalesReportController(ISalesReportService saleReportService, IUserService userService)
         {
-            _salesReportService = rService;
-            _userService = uService;
+            _salesReportService = saleReportService;
+            _userService = userService;
         }
 
         [HttpPost]
