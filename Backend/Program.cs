@@ -24,6 +24,7 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using Backend.Dtos;
 using Backend.Validators;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,7 +88,48 @@ builder.Services.AddScoped<ApplicationContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1",
+            new OpenApiInfo
+            {
+                Title = "Trimania E-Commerce Api",
+                Version = "v1",
+                Description = "API for the frontend of Trimania E-commerce website",
+                Contact = new OpenApiContact
+                {
+                    Name = "Raphael Braga Evangelista",
+                    Url = new Uri("https://github.com/raphabraga")
+                }
+            });
+        options.AddSecurityDefinition(
+            "Bearer",
+            new OpenApiSecurityScheme()
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Authentication based on Json Web Token (JWT).\r\n\r\n Enter 'Bearer'[space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+            });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference =new OpenApiReference
+                    {
+                        Type =ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        }
+        );
+    }
+);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
