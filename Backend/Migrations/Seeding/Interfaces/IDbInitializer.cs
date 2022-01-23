@@ -1,4 +1,4 @@
-namespace Backend.Migrations
+namespace Backend.Migrations.Seeding.Interfaces
 {
     public interface IDbInitializer
     {

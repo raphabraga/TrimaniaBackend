@@ -1,13 +1,14 @@
 using System;
 using System.Linq;
 using Backend.Data;
+using Backend.Migrations.Seeding.Interfaces;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using BC = BCrypt.Net.BCrypt;
 
-namespace Backend.Migrations
+namespace Backend.Migrations.Seeding
 {
     public class DbInitializer : IDbInitializer
     {

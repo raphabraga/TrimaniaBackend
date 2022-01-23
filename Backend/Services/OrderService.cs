@@ -87,7 +87,7 @@ namespace Backend.Services
                 throw;
             }
         }
-        public async Task<Order> CreateOrder(User user)
+        private async Task<Order> CreateOrder(User user)
         {
             try
             {
@@ -256,8 +256,7 @@ namespace Backend.Services
                 throw;
             }
         }
-
-        public async Task ProcessPurchase(Order order, PaymentRequest payment)
+        private async Task ProcessPurchase(Order order, PaymentRequest payment)
         {
             // TODO: Improve this method
             int processingTime = 0;
