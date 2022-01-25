@@ -146,6 +146,7 @@ _TeamCity*
 !.axoCover/settings.json
 
 # Coverlet is a free, cross platform Code Coverage Tool
+coveragereports
 coverage*.json
 coverage*.xml
 coverage*.info
@@ -453,3 +454,10 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Test results folder of xunit
+TestResults
+
+#dotnet tools configuration files and tools
+.config
+tools
