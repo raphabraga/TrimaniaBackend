@@ -17,6 +17,8 @@ namespace Backend.Services
     {
         private readonly IUnitOfWork _unitOfWork;
 
+        public ProductService() { }
+
         public ProductService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;

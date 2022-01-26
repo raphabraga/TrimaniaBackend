@@ -1,20 +1,19 @@
 using System;
 using Backend.Repositories;
-using Backend.Services;
 using BackendTest.Mocks;
 
 namespace BackendTest.Fixtures
 {
-    public class UnitOfWorkFixture : IDisposable
+    public class GenericFixture<T> : IDisposable where T : class, new()
     {
-        public SalesReportService SalesReportService { get; set; }
+        public T Service { get; set; }
         public ApplicationContextMoq Context { get; set; }
-        public UnitOfWorkFixture()
+        public GenericFixture()
         {
             Context = new ApplicationContextMoq();
             DbSeedingMock.Seeding(Context);
             var unitOfWork = new UnitOfWork(Context);
-            SalesReportService = new SalesReportService(unitOfWork);
+            Service = (T)Activator.CreateInstance(typeof(T), unitOfWork);
         }
 
         public void Dispose()

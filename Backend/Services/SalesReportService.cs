@@ -17,6 +17,8 @@ namespace Backend.Services
     public class SalesReportService : ISalesReportService
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        public SalesReportService() { }
         public SalesReportService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;

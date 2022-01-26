@@ -4,15 +4,16 @@ using System.Threading.Tasks;
 using Backend.Dtos;
 using Backend.Models;
 using Backend.Models.Enums;
+using Backend.Services;
 using BackendTest.Fixtures;
 using Xunit;
 
 namespace BackendTest.Services
 {
-    public class SalesReportServiceTests : IClassFixture<UnitOfWorkFixture>
+    public class SalesReportServiceTests : IClassFixture<GenericFixture<SalesReportService>>
     {
-        private readonly UnitOfWorkFixture _fixture;
-        public SalesReportServiceTests(UnitOfWorkFixture fixture)
+        private readonly GenericFixture<SalesReportService> _fixture;
+        public SalesReportServiceTests(GenericFixture<SalesReportService> fixture)
         {
             _fixture = fixture;
         }
@@ -33,7 +34,7 @@ namespace BackendTest.Services
                 EndDate = null
             };
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.ToList().Count, report.Orders.Count);
         }
@@ -56,7 +57,7 @@ namespace BackendTest.Services
                 EndDate = null
             };
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.Where(order => order.ClientId == user.Id).Count(), report.Orders.Count);
         }
@@ -83,7 +84,7 @@ namespace BackendTest.Services
                 EndDate = null
             };
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.Where(order => (order.Status == firstStatus)
             || (order.Status == secondStatus)).Count(), report.Orders.Count);
@@ -118,7 +119,7 @@ namespace BackendTest.Services
             };
 
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.Where(order => (order.ClientId == firstUser.Id)
             || (order.ClientId == secondUser.Id) || (order.ClientId == thirdUser.Id)).Count(), report.Orders.Count);
@@ -146,7 +147,7 @@ namespace BackendTest.Services
             };
 
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.Where(order => order.CreationDate > reportRequest.StartDate
             ).Count(), report.Orders.Count);
@@ -174,7 +175,7 @@ namespace BackendTest.Services
             };
 
             // When
-            var report = await _fixture.SalesReportService.GenerateReport(user, reportRequest);
+            var report = await _fixture.Service.GenerateReport(user, reportRequest);
             // Then
             Assert.Equal(_fixture.Context.Orders.Where(order => order.CreationDate < reportRequest.EndDate
             ).Count(), report.Orders.Count);

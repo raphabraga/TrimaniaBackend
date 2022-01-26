@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Backend.Data;
 using Backend.Interfaces.Repositories;
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;

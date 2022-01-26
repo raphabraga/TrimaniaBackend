@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Backend.ViewModels;
 
 namespace Backend.ViewModels
 {
