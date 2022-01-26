@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace BackendTest.Services
 {
-    public class TokenServicesTests
+    public class TokenServiceTests
     {
         [Fact]
         public void GenerateToken_WhenCalled_ReturnsTokenString()

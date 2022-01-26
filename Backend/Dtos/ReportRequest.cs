@@ -8,10 +8,10 @@ namespace Backend.Dtos
     public class ReportRequest
     {
         [DataType(DataType.Date)]
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public List<string> UserFilter { get; set; }
         public List<OrderStatus> StatusFilter { get; set; }
     }

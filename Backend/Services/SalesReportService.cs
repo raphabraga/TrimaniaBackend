@@ -10,6 +10,7 @@ using Backend.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Threading.Tasks;
+using Backend.Dtos;
 
 namespace Backend.Services
 {
@@ -20,32 +21,34 @@ namespace Backend.Services
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<SalesReport> GenerateReport(User requestingUser, DateTime startDate, DateTime endDate,
-        List<string> userFilter, List<OrderStatus> statusFilter)
+        public async Task<SalesReport> GenerateReport(User requestingUser, ReportRequest reportRequest)
         {
             // TODO: Improve this method
             try
             {
-                endDate = endDate == DateTime.MinValue ? DateTime.MaxValue : endDate;
-                Expression<Func<Order, bool>> filter = (order => order.CreationDate > startDate && order.CreationDate < endDate);
+                if (reportRequest.StartDate == null)
+                    reportRequest.StartDate = DateTime.MinValue;
+                if (reportRequest.EndDate == null)
+                    reportRequest.EndDate = DateTime.MaxValue;
+                Expression<Func<Order, bool>> filter = (order => order.CreationDate > reportRequest.StartDate && order.CreationDate < reportRequest.EndDate);
                 Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes =
                 order => order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
                 var iNumerableOrders = await _unitOfWork.OrderRepository.Get(filter, orderBy: null, includes, page: null);
                 var orders = iNumerableOrders.ToList();
                 List<Order> OrdersFiltered = new List<Order>();
                 if (requestingUser.Role != "Administrator")
-                    userFilter = new List<string> { requestingUser.Login };
-                if (userFilter != null)
+                    reportRequest.UserFilter = new List<string> { requestingUser.Login };
+                if (reportRequest.UserFilter != null)
                 {
-                    userFilter.ForEach(userLogin => OrdersFiltered = OrdersFiltered.Union(
+                    reportRequest.UserFilter.ForEach(userLogin => OrdersFiltered = OrdersFiltered.Union(
                         orders.Where(order => order.Client.Login == userLogin).ToList()
                     ).ToList());
                     orders = OrdersFiltered;
                     OrdersFiltered = new List<Order>();
                 }
-                if (statusFilter != null)
+                if (reportRequest.StatusFilter != null)
                 {
-                    statusFilter.ForEach(status => OrdersFiltered = OrdersFiltered.Union(
+                    reportRequest.StatusFilter.ForEach(status => OrdersFiltered = OrdersFiltered.Union(
                         orders.Where(order => order.Status == status).ToList()
                     ).ToList());
                     orders = OrdersFiltered;
