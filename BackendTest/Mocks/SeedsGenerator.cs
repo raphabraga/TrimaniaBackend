@@ -59,7 +59,7 @@ namespace BackendTest.Mocks
             {
                 Id = id,
                 Name = GeneratorUtils.GenerateAttribute("Products", id - 1),
-                Description = GeneratorUtils.GenerateLoremIpsum(15, 30, 5, 10),
+                Description = GeneratorUtils.GenerateLoremIpsum(10, 20, 3, 5),
                 Price = (decimal)(990 * new Random().NextDouble()) + 10,
                 StockQuantity = new Random().Next(1, 100)
             };
