@@ -12,6 +12,6 @@ namespace Backend.Interfaces.Services
         public abstract Task<Product> UpdateProductQuantity(int id, int amount);
         public abstract Task DeleteProduct(int id);
         public abstract Task<Product> GetProductById(int id);
-        public abstract Task<List<Product>> GetProducts(string filter, string sort, int? page);
+        public abstract Task<List<Product>> GetProducts(SearchProductRequest searchRequest);
     }
 }

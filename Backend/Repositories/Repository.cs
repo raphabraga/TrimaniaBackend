@@ -27,7 +27,6 @@ namespace Backend.Repositories
                 System.Console.WriteLine(e.Message);
             }
         }
-
         public async Task<IEnumerable<T>> Get(Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes = null,

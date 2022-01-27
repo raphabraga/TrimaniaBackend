@@ -47,20 +47,20 @@ namespace Backend.Services
                 throw;
             }
         }
-        public async Task<List<Product>> GetProducts(string filter, string sort, int? queryPage)
+        public async Task<List<Product>> GetProducts(SearchProductRequest searchRequest)
         {
             try
             {
                 Expression<Func<Product, bool>> predicateFilter = null;
                 Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = null;
-                if (!string.IsNullOrEmpty(filter))
-                    predicateFilter = product => product.Name.Contains(filter);
-                if (sort == "asc")
+                if (!string.IsNullOrEmpty(searchRequest.NameFilter))
+                    predicateFilter = product => product.Name.Contains(searchRequest.NameFilter);
+                if (searchRequest.SortBy == "asc")
                     orderBy = q => q.OrderBy(product => product.Name);
-                else if (sort == "desc")
+                else if (searchRequest.SortBy == "desc")
                     orderBy = q => q.OrderByDescending(product => product.Name);
 
-                var products = await _unitOfWork.ProductRepository.Get(predicateFilter, orderBy, null, queryPage);
+                var products = await _unitOfWork.ProductRepository.Get(predicateFilter, orderBy, null, searchRequest.Page);
                 return products.ToList();
             }
             catch (InvalidOperationException)
@@ -92,10 +92,10 @@ namespace Backend.Services
                 if (productUpdate != null && productUpdate?.Id != id)
                     throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
                 var product = await GetProductById(id);
-                product.Name = string.IsNullOrEmpty(productUpdate.Name) ? product.Name : productUpdate.Name;
-                product.Price = productUpdate.Price == null ? product.Price : productUpdate.Price.Value;
-                product.StockQuantity = productUpdate.StockQuantity == null ? product.StockQuantity : productUpdate.StockQuantity;
-                product.Description = productUpdate.Description == null ? product.Description : productUpdate.Description;
+                product.Name = string.IsNullOrEmpty(updateProductRequest.Name) ? product.Name : updateProductRequest.Name;
+                product.Price = updateProductRequest.Price == null ? product.Price : updateProductRequest.Price.Value;
+                product.StockQuantity = updateProductRequest.StockQuantity == null ? product.StockQuantity : updateProductRequest.StockQuantity;
+                product.Description = updateProductRequest == null ? product.Description : updateProductRequest.Description;
                 await _unitOfWork.Commit();
                 return product;
             }

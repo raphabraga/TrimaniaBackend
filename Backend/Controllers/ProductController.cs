@@ -28,7 +28,13 @@ namespace Backend.Controllers
         public async Task<IActionResult> GetProducts([FromQuery(Name = "sort")] string sort,
         [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = await _productService.GetProducts(filter: null, sort, page);
+            var searchRequest = new SearchProductRequest()
+            {
+                NameFilter = null,
+                SortBy = sort,
+                Page = page,
+            };
+            List<Product> products = await _productService.GetProducts(searchRequest);
             if (products == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
             return Ok(products);
@@ -40,7 +46,13 @@ namespace Backend.Controllers
         public async Task<IActionResult> SearchProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = await _productService.GetProducts(filter, sort, page);
+            var searchRequest = new SearchProductRequest()
+            {
+                NameFilter = filter,
+                SortBy = sort,
+                Page = page
+            };
+            List<Product> products = await _productService.GetProducts(searchRequest);
             if (products == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
             return Ok(products);
