@@ -30,6 +30,16 @@ namespace BackendTest.Services
             Assert.Equal(productId, product.Id);
         }
 
+        [Fact]
+        public async Task GetProductById_PassedNonExistingProductId_ThrowsRegisterNotFoundException()
+        {
+            int productId = _fixture.Context.Products.Count() + 1;
+            // When
+            var act = async () => await _fixture.Service.GetProductById(productId);
+            // Then
+            await Assert.ThrowsAsync<RegisterNotFoundException>(act);
+        }
+
         [Theory]
         [InlineData("asc")]
         [InlineData("desc")]
@@ -147,6 +157,18 @@ namespace BackendTest.Services
             Assert.Equal<Product>(_fixture.Context.Products.Find(productId), updatedProduct);
         }
 
+        [Fact]
+        public async Task UpdateProduct_WhenCalledWithAnNonExistingProductId_ThrowsRegisterNotFoundException()
+        {
+            // Given
+            var updateProductRequest = new UpdateProductRequest();
+            var productId = _fixture.Context.Products.Count() + 1;
+            // When
+            var act = async () => await _fixture.Service.UpdateProduct(productId, updateProductRequest);
+            // Then
+            await Assert.ThrowsAsync<RegisterNotFoundException>(act);
+        }
+
         [Theory]
         [InlineData(10)]
         public async Task UpdateProduct_WhenCalledWithAnExistingNameForDifferentId_ThrowsRegisteredProductException(int productId)
@@ -191,6 +213,17 @@ namespace BackendTest.Services
             await _fixture.Service.UpdateProductQuantity(productId, quantity);
             // Then
             Assert.Equal(initialQuantity - quantity, _fixture.Context.Products.Find(productId).StockQuantity);
+        }
+
+        [Fact]
+        public async Task UpdateProductQuantity_WhenCalledWithAnNonExistingProductId_ThrowsRegisterNotFoundException()
+        {
+            // Given
+            var productId = _fixture.Context.Products.Count() + 1;
+            // When
+            var act = async () => await _fixture.Service.UpdateProductQuantity(productId, 1);
+            // Then
+            await Assert.ThrowsAsync<RegisterNotFoundException>(act);
         }
 
         [Theory]
@@ -239,5 +272,15 @@ namespace BackendTest.Services
             await Assert.ThrowsAsync<NotAllowedDeletionException>(act);
         }
 
+        [Fact]
+        public async Task DeleteProduct_WhenCalledWithAnNonExistingProductId_ThrowsRegisterNotFoundException()
+        {
+            // Given
+            var productId = _fixture.Context.Products.Count() + 1;
+            // When
+            var act = async () => await _fixture.Service.DeleteProduct(productId);
+            // Then
+            await Assert.ThrowsAsync<RegisterNotFoundException>(act);
+        }
     }
 }
