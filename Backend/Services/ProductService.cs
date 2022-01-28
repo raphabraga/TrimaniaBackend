@@ -16,7 +16,6 @@ namespace Backend.Services
     public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
-
         public ProductService() { }
 
         public ProductService(IUnitOfWork unitOfWork)
@@ -63,8 +62,6 @@ namespace Backend.Services
         public async Task<Product> UpdateProduct(int id, UpdateProductRequest updateProductRequest)
         {
             var product = await GetProductById(id);
-            if (product == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             Product productUpdate = await GetProductByName(updateProductRequest.Name);
             if (productUpdate != null && productUpdate?.Id != id)
                 throw new RegisteredProductException(ErrorUtils.GetMessage(ErrorType.UniqueProductName));
@@ -79,8 +76,6 @@ namespace Backend.Services
         public async Task<Product> UpdateProductQuantity(int id, int amount)
         {
             var product = await GetProductById(id);
-            if (product == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             if (product.StockQuantity < amount)
                 throw new OutOfStockException(ErrorUtils.GetMessage(ErrorType.InsufficientProductInStock));
             product.StockQuantity -= amount;

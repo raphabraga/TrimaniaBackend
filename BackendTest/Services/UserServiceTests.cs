@@ -12,6 +12,7 @@ using Xunit;
 using Moq;
 using Backend.Repositories;
 using Backend.Interfaces.Services;
+using AutoMapper;
 
 namespace BackendTest.Services
 {
@@ -101,6 +102,17 @@ namespace BackendTest.Services
             User user = await _fixture.Service.GetUserByLogin(login);
             // Then
             Assert.Equal<User>(_fixture.Context.Users.FirstOrDefault(u => u.Login == login), user);
+        }
+
+        [Fact]
+        public async Task GetUserByLogin_WithNonExistingLogin_RegisterNotFoundException()
+        {
+            // Given
+            string login = "NonExistingUserLogin";
+            // When
+            var act = async () => await _fixture.Service.GetUserByLogin(login);
+            // Then
+            await Assert.ThrowsAsync<RegisterNotFoundException>(act);
         }
 
         [Theory]
@@ -459,5 +471,120 @@ namespace BackendTest.Services
             await Assert.ThrowsAsync<RegisterNotFoundException>(act);
         }
 
+        [Theory]
+        [InlineData(10)]
+        public async Task UpdateUser_WhenOnlyNameIsPassed_UpdateUserInDbOnlyInName(int userId)
+        {
+            // Given
+            var mapper = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, User>();
+            }).CreateMapper();
+            User user = _fixture.Context.Users.Find(userId);
+            User userBeforeUpdate = mapper.Map<User>(user);
+            UpdateUserRequest updateRequest = new UpdateUserRequest()
+            {
+                Name = "UserUpdatedNameOnly",
+            };
+            // When
+            User updatedUser = await _fixture.Service.UpdateUser(user, updateRequest);
+            // Then
+            Assert.True(userBeforeUpdate.Name != updatedUser.Name &&
+                        userBeforeUpdate.Login == updatedUser.Login &&
+                        userBeforeUpdate.Cpf == updatedUser.Cpf &&
+                        userBeforeUpdate.Email == updatedUser.Email &&
+                        userBeforeUpdate.Birthday == updatedUser.Birthday &&
+                        userBeforeUpdate.CreationDate == updatedUser.CreationDate &&
+                        userBeforeUpdate.Password == updatedUser.Password &&
+                        userBeforeUpdate.Address == updatedUser.Address &&
+                        userBeforeUpdate.Role == updatedUser.Role
+                        );
+        }
+
+        [Theory]
+        [InlineData(10)]
+        public async Task UpdateUser_WhenOnlyBirthdayIsPassed_UpdateUserInDbOnlyInBirthday(int userId)
+        {
+            // Given
+            var mapper = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, User>();
+            }).CreateMapper();
+            User user = _fixture.Context.Users.Find(userId);
+            User userBeforeUpdate = mapper.Map<User>(user);
+            UpdateUserRequest updateRequest = new UpdateUserRequest()
+            {
+                Birthday = DateTime.Now,
+            };
+            // When
+            User updatedUser = await _fixture.Service.UpdateUser(user, updateRequest);
+            // Then
+            Assert.True(userBeforeUpdate.Name == updatedUser.Name &&
+                        userBeforeUpdate.Login == updatedUser.Login &&
+                        userBeforeUpdate.Cpf == updatedUser.Cpf &&
+                        userBeforeUpdate.Email == updatedUser.Email &&
+                        userBeforeUpdate.Birthday != updatedUser.Birthday &&
+                        userBeforeUpdate.CreationDate == updatedUser.CreationDate &&
+                        userBeforeUpdate.Password == updatedUser.Password &&
+                        userBeforeUpdate.Address == updatedUser.Address &&
+                        userBeforeUpdate.Role == updatedUser.Role
+                        );
+        }
+
+        [Theory]
+        [InlineData(10)]
+        public async Task UpdateUser_WhenOnlyPasswordIsPassed_UpdateUserInDbOnlyInPassword(int userId)
+        {
+            // Given
+            var mapper = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, User>();
+            }).CreateMapper();
+            User user = _fixture.Context.Users.Find(userId);
+            User userBeforeUpdate = mapper.Map<User>(user);
+            UpdateUserRequest updateRequest = new UpdateUserRequest()
+            {
+                Password = "UserUpdatedPasswordOnly",
+            };
+            // When
+            User updatedUser = await _fixture.Service.UpdateUser(user, updateRequest);
+            // Then
+            Assert.True(userBeforeUpdate.Name == updatedUser.Name &&
+                        userBeforeUpdate.Login == updatedUser.Login &&
+                        userBeforeUpdate.Cpf == updatedUser.Cpf &&
+                        userBeforeUpdate.Email == updatedUser.Email &&
+                        userBeforeUpdate.Birthday == updatedUser.Birthday &&
+                        userBeforeUpdate.CreationDate == updatedUser.CreationDate &&
+                        userBeforeUpdate.Password != updatedUser.Password &&
+                        userBeforeUpdate.Address == updatedUser.Address &&
+                        userBeforeUpdate.Role == updatedUser.Role
+                        );
+        }
+
+        [Theory]
+        [InlineData(10)]
+        public async Task UpdateUser_WhenUserHasNullAddress_CreateANewRegisterOfAddressInDb(int userId)
+        {
+            // Given
+            User user = _fixture.Context.Users.Find(userId);
+            user.Address = null;
+            user.AddressId = null;
+            UpdateUserRequest updateRequest = new UpdateUserRequest()
+            {
+                Address = new Address()
+                {
+                    Number = "NumberUpdated",
+                    Street = "StreetUpdated",
+                    Neighborhood = "NeighbourhoodUpdated",
+                    City = "CityUpdated",
+                    State = "StateUpdate"
+                }
+            };
+            // When
+            User updatedUser = await _fixture.Service.UpdateUser(user, updateRequest);
+            // Then
+            Assert.Equal<Address>(updatedUser.Address, _fixture.Context.Users.Find(userId).Address
+                        );
+        }
     }
 }

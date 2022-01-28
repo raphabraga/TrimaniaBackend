@@ -20,7 +20,6 @@ namespace Backend.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
-
         public UserService() { }
 
         public UserService(IUnitOfWork unitOfWork)
@@ -45,7 +44,10 @@ namespace Backend.Services
 
         public async Task<User> GetUserByLogin(string login)
         {
-            return await _unitOfWork.UserRepository.GetBy(user => user.Login == login, "Address");
+            var user = await _unitOfWork.UserRepository.GetBy(user => user.Login == login, "Address");
+            if (user == null)
+                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
+            return user;
         }
 
         public async Task<List<User>> GetUsers(SearchUserRequest searchRequest)
@@ -86,9 +88,15 @@ namespace Backend.Services
 
         public async Task<string> GetAuthenticationToken(AuthenticationRequest authUser)
         {
-            User user = await GetUserByLogin(authUser.Login);
-            if (user == null)
+            User user;
+            try
+            {
+                user = await GetUserByLogin(authUser.Login);
+            }
+            catch (RegisterNotFoundException)
+            {
                 throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.IncorrectLoginOrPassword));
+            }
             if (!BC.Verify(authUser.Password, user.Password))
                 throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.IncorrectLoginOrPassword));
             return _tokenService.GenerateToken(user);
