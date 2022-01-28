@@ -36,7 +36,7 @@ namespace BackendTest.Mocks
             string name = GeneratorUtils.GenerateAttribute("Names", id - 1);
             string[] names = name.Split(" ");
             string login = names[0].Substring(0, 1).ToLower() + "." + names[1].ToLower();
-            string email = login + "@mail.com";
+            string email = name.Substring(1, 5) + GeneratorUtils.GenerateNumber(3) + "@mail.com";
 
             return new User
             {

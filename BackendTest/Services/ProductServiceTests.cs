@@ -218,6 +218,7 @@ namespace BackendTest.Services
                 Price = 200
             };
             _fixture.Context.Products.Add(productToDelete);
+            _fixture.Context.SaveChanges();
             // When
             await _fixture.Service.DeleteProduct(productId);
             // Then
