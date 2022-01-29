@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Interfaces.Services;
 using System.Collections.Generic;
-using Backend.Models.Exceptions;
-using Backend.Models.Enums;
-using Backend.Utils;
 using Backend.ViewModels;
 using Backend.Dtos;
 using System.Threading.Tasks;
@@ -35,8 +32,6 @@ namespace Backend.Controllers
             string role = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role).Value;
             User requestingUser = await _userService.GetUserByLogin(login);
             Order order = await _orderService.GetOrderById(requestingUser, id);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.OrderIdNotFound));
             return Ok(new ViewOrder(order));
         }
 
@@ -45,8 +40,6 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userService.GetUserByLogin(login);
-            if (user == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
             var userOrders = await _orderService.GetOrders(user, sort, page);
             return Ok(userOrders.Select(order => new ViewOrder(order)));
         }
@@ -57,11 +50,7 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userService.GetUserByLogin(login);
-            if (user == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
             Order order = await _orderService.GetOpenOrder(user);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoOpenOrders));
             return Ok(new ViewOrder(order));
         }
 
@@ -71,11 +60,7 @@ namespace Backend.Controllers
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userService.GetUserByLogin(login);
-            if (user == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CredentialsNotFound));
             List<Order> orders = await _orderService.GetInProgressOrders(user);
-            if (orders == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.NoInProgressOrders));
             return Ok(orders.Select(order => new ViewOrder(order)));
         }
 

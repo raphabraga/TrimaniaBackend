@@ -3,9 +3,6 @@ using System.Threading.Tasks;
 using Backend.Dtos;
 using Backend.Interfaces.Services;
 using Backend.Models;
-using Backend.Models.Enums;
-using Backend.Models.Exceptions;
-using Backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,9 +25,13 @@ namespace Backend.Controllers
         public async Task<IActionResult> GetProducts([FromQuery(Name = "sort")] string sort,
         [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = await _productService.GetProducts(filter: null, sort, page);
-            if (products == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
+            var searchRequest = new SearchProductRequest()
+            {
+                NameFilter = null,
+                SortBy = sort,
+                Page = page,
+            };
+            List<Product> products = await _productService.GetProducts(searchRequest);
             return Ok(products);
         }
 
@@ -40,9 +41,13 @@ namespace Backend.Controllers
         public async Task<IActionResult> SearchProducts([FromQuery(Name = "filter")] string filter,
         [FromQuery(Name = "sort")] string sort, [FromQuery(Name = "page")] int? page)
         {
-            List<Product> products = await _productService.GetProducts(filter, sort, page);
-            if (products == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductsNotFound));
+            var searchRequest = new SearchProductRequest()
+            {
+                NameFilter = filter,
+                SortBy = sort,
+                Page = page
+            };
+            List<Product> products = await _productService.GetProducts(searchRequest);
             return Ok(products);
         }
 
@@ -51,8 +56,6 @@ namespace Backend.Controllers
         public async Task<IActionResult> ProductsById(int id)
         {
             Product product = await _productService.GetProductById(id);
-            if (product == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             return Ok(product);
         }
 
@@ -67,16 +70,12 @@ namespace Backend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest updatedProduct)
         {
-            if (await _productService.GetProductById(id) == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             return Ok(await _productService.UpdateProduct(id, updatedProduct));
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            if (await _productService.GetProductById(id) == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             await _productService.DeleteProduct(id);
             return NoContent();
         }

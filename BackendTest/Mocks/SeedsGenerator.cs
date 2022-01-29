@@ -1,28 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Backend.Data;
-using Backend.Migrations.Seeding.Interfaces;
 using Backend.Models;
 using Backend.Models.Enums;
 using Backend.Utils;
 using Microsoft.EntityFrameworkCore;
 using BC = BCrypt.Net.BCrypt;
 
-namespace Backend.Migrations.Seeding
+namespace BackendTest.Mocks
 {
-    public class DbSeeding : IDbSeeding
+    public class SeedsGenerator
     {
-        private readonly ApplicationContext _applicationContext;
-        public DbSeeding(ApplicationContext context)
+        private readonly ApplicationContextMoq _context;
+        public SeedsGenerator(ApplicationContextMoq context)
         {
-            _applicationContext = context;
+            _context = context;
         }
         public Address GenerateAddress()
         {
             return new Address
             {
-                Id = _applicationContext.Addresses.Count() + 1,
+                Id = _context.Addresses.Count() + 1,
                 Number = GeneratorUtils.GenerateNumber(1, 3),
                 Street = GeneratorUtils.GenerateAttribute("Streets"),
                 Neighborhood = GeneratorUtils.GenerateAttribute("Neighbourhoods"),
@@ -34,11 +32,11 @@ namespace Backend.Migrations.Seeding
         public User GenerateUser()
         {
             var rand = new Random();
-            int id = _applicationContext.Users.Count() + 1;
+            int id = _context.Users.Count() + 1;
             string name = GeneratorUtils.GenerateAttribute("Names", id - 1);
             string[] names = name.Split(" ");
             string login = names[0].Substring(0, 1).ToLower() + "." + names[1].ToLower();
-            string email = login + "@mail.com";
+            string email = name.Substring(1, 5) + GeneratorUtils.GenerateNumber(3) + "@mail.com";
 
             return new User
             {
@@ -50,13 +48,13 @@ namespace Backend.Migrations.Seeding
                 Email = email,
                 Birthday = DateTime.Now.AddYears(-rand.Next(20, 30)).AddDays(rand.Next(1, 365)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60)),
                 CreationDate = DateTime.Now.AddYears(-rand.Next(1, 3)).AddDays(rand.Next(1, 365)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60)),
-                AddressId = _applicationContext.Addresses.Count()
+                AddressId = _context.Addresses.Count()
             };
         }
 
         public Product GenerateProduct()
         {
-            int id = _applicationContext.Products.Count() + 1;
+            int id = _context.Products.Count() + 1;
             return new Product
             {
                 Id = id,
@@ -70,20 +68,20 @@ namespace Backend.Migrations.Seeding
         public ChartItem GenerateChartItem(int id)
         {
             var rand = new Random();
-            var productId = rand.Next(1, _applicationContext.Products.AsNoTracking().Count() + 1);
-            var clientId = rand.Next(2, _applicationContext.Users.AsNoTracking().Count() + 1);
+            var productId = rand.Next(1, _context.Products.AsNoTracking().Count() + 1);
+            var clientId = rand.Next(2, _context.Users.AsNoTracking().Count() + 1);
             return new ChartItem
             {
                 Id = id,
                 ProductId = productId,
-                Price = _applicationContext.Products.AsNoTracking().FirstOrDefault(product => product.Id == productId).Price.GetValueOrDefault(),
+                Price = _context.Products.AsNoTracking().FirstOrDefault(product => product.Id == productId).Price.GetValueOrDefault(),
                 Quantity = rand.Next(1, 4),
             };
         }
         public Order GenerateOrder()
         {
             var rand = new Random();
-            int id = _applicationContext.Orders.AsNoTracking().Count() + 1;
+            int id = _context.Orders.AsNoTracking().Count() + 1;
             DateTime creationDate = DateTime.Now.AddYears(-rand.Next(1, 3)).AddDays(rand.Next(1, 365)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60));
             OrderStatus status = rand.NextDouble() > 0.5f ? OrderStatus.Finished : OrderStatus.Cancelled;
             DateTime? cancellationDate = status == OrderStatus.Cancelled ?
@@ -91,7 +89,7 @@ namespace Backend.Migrations.Seeding
             DateTime? finishingDate = status == OrderStatus.Finished ?
             creationDate.AddDays(rand.Next(0, 7)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60)) : null;
             var items = new List<ChartItem>();
-            int itemId = _applicationContext.Items.Count() + 1;
+            int itemId = _context.Items.Count() + 1;
             for (int i = 0; i < rand.Next(1, 6); i++)
             {
                 var item = GenerateChartItem(itemId + i);
@@ -101,7 +99,7 @@ namespace Backend.Migrations.Seeding
             return new Order
             {
                 Id = id,
-                ClientId = rand.Next(2, _applicationContext.Users.AsNoTracking().Count() + 1),
+                ClientId = rand.Next(2, _context.Users.AsNoTracking().Count() + 1),
                 CreationDate = creationDate,
                 FinishingDate = finishingDate,
                 CancellationDate = cancellationDate,

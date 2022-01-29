@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Backend.Data;
 using Backend.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -12,10 +11,10 @@ namespace Backend.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly ApplicationContext _applicationContext = null;
+        private readonly DbContext _applicationContext = null;
         private readonly DbSet<T> _dbSet;
 
-        public Repository(ApplicationContext context)
+        public Repository(DbContext context)
         {
             _applicationContext = context;
             _dbSet = context.Set<T>();
@@ -28,7 +27,6 @@ namespace Backend.Repositories
                 System.Console.WriteLine(e.Message);
             }
         }
-
         public async Task<IEnumerable<T>> Get(Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes = null,

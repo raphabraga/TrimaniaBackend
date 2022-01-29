@@ -26,12 +26,11 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SalesReport([FromBody] ReportRequest filter)
+        public async Task<IActionResult> SalesReport([FromBody] ReportRequest reportRequest)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User requestingUser = await _userService.GetUserByLogin(login);
-            return Ok(await _salesReportService.GenerateReport(requestingUser, filter.StartDate,
-                filter.EndDate, filter.UserFilter, filter.StatusFilter));
+            return Ok(await _salesReportService.GenerateReport(requestingUser, reportRequest));
         }
     }
 }

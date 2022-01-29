@@ -1,14 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using Backend.Data;
 using Backend.Interfaces.Repositories;
 using Backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-        private ApplicationContext _applicationContext = null;
+        private DbContext _applicationContext = null;
         private Repository<User> _userRepository = null;
         private Repository<Product> _productRepository = null;
         private Repository<Order> _orderRepository = null;
@@ -65,7 +65,7 @@ namespace Backend.Repositories
             }
         }
 
-        public UnitOfWork(ApplicationContext context)
+        public UnitOfWork(DbContext context)
         {
             _applicationContext = context;
         }
