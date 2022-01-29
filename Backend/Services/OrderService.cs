@@ -19,35 +19,46 @@ namespace Backend.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProductService _productService;
+
         public OrderService(IUnitOfWork unitOfWork, IProductService service)
         {
             _productService = service;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<Order>> GetOrders(User user, string sort, int? queryPage)
+        private async Task<List<Order>> GetAllOrders(string sort)
         {
-            Expression<Func<Order, bool>> predicateFilter = order => order.Client.Id == user.Id;
+            Expression<Func<Order, bool>> predicateFilter = order => true;
             Func<IQueryable<Order>, IOrderedQueryable<Order>> orderBy = null;
-            Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
-            order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
             if (sort == "asc")
                 orderBy = q => q.OrderBy(order => order.CreationDate);
             else if (sort == "desc")
                 orderBy = q => q.OrderByDescending(order => order.CreationDate);
-            var orders = await _unitOfWork.OrderRepository.Get(predicateFilter, orderBy, includes, queryPage);
+            Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
+            order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
+            var orders = await _unitOfWork.OrderRepository.Get(predicateFilter, orderBy, includes, page: null);
             return orders.ToList();
+        }
+
+        public async Task<List<Order>> GetOrders(User user, string sort, int? queryPage)
+        {
+            int resultsPerPage = 10;
+            var orders = await GetAllOrders(sort);
+            if (user.Role != "Administrator")
+                orders = orders.Where(order => order.ClientId == user.Id).ToList();
+            if (queryPage == null)
+                return orders;
+            else
+                return orders.Skip((queryPage.Value - 1) * resultsPerPage).Take(resultsPerPage).ToList();
         }
         public async Task<Order> GetOrderById(User requestingUser, int id)
         {
-            Func<IQueryable<Order>, IIncludableQueryable<Order, object>> includes = order =>
-            order.Include(order => order.Client).Include(order => order.Items).ThenInclude(item => item.Product);
-
-            var userOrder = await _unitOfWork.OrderRepository.Get(filter: null, orderBy: null, includes, page: null);
-            var order = userOrder.FirstOrDefault(order => order.Id == id);
+            var allOrders = await GetAllOrders("asc");
+            var userOrders = await GetOrders(requestingUser, sort: "asc", queryPage: null);
+            var order = allOrders.FirstOrDefault(order => order.Id == id);
             if (order == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.OrderIdNotFound));
-            if (requestingUser.Role != "Administrator" && order?.Client?.Id != requestingUser.Id)
+            if (requestingUser.Role != "Administrator" && order.ClientId != requestingUser.Id)
                 throw new UnauthorizedAccessException(ErrorUtils.GetMessage(ErrorType.NotAuthorized));
             return order;
         }
@@ -80,8 +91,7 @@ namespace Backend.Services
         }
         public async Task<ChartItem> AddToChart(User user, AddToChartRequest request)
         {
-            if (await _productService.GetProductById(request.ProductId.Value) == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
+            var product = await _productService.GetProductById(request.ProductId.Value);
             Order order = new Order();
             try
             {
@@ -93,7 +103,7 @@ namespace Backend.Services
             }
             if (order == null)
                 order = await CreateOrder(user);
-            Product product = await _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
+            product = await _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
             order.TotalValue += product.Price.Value * request.Quantity.Value;
             ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == request.ProductId.Value);
             if (item == null)
@@ -135,43 +145,36 @@ namespace Backend.Services
 
         public async Task<ChartItem> ChangeItemQuantity(User user, int id, string sign)
         {
-            try
+            Order order = await GetOpenOrder(user);
+            if (order == null)
+                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemFromEmptyChart));
+            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
+            if (item == null)
+                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInChart));
+            else
             {
-                Order order = await GetOpenOrder(user);
-                if (order == null)
-                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemFromEmptyChart));
-                ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
-                if (item == null)
-                    throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInChart));
+                if (sign == "Increase")
+                {
+                    await _productService.UpdateProductQuantity(id, 1);
+                    item.Quantity++;
+                    order.TotalValue += item.Price;
+                }
                 else
                 {
-                    if (sign == "Increase")
+                    if (item.Quantity == 1)
                     {
-                        await _productService.UpdateProductQuantity(id, 1);
-                        item.Quantity++;
-                        order.TotalValue += item.Price;
+                        await RemoveFromChart(user, id);
+                        item.Quantity--;
                     }
                     else
                     {
-                        if (item.Quantity == 1)
-                        {
-                            await RemoveFromChart(user, id);
-                            item.Quantity--;
-                        }
-                        else
-                        {
-                            item.Quantity--;
-                            order.TotalValue -= item.Price;
-                            await _productService.UpdateProductQuantity(id, -1);
-                        }
+                        item.Quantity--;
+                        order.TotalValue -= item.Price;
+                        await _productService.UpdateProductQuantity(id, -1);
                     }
-                    await _unitOfWork.Commit();
-                    return item;
                 }
-            }
-            catch (OutOfStockException)
-            {
-                throw;
+                await _unitOfWork.Commit();
+                return item;
             }
         }
         public async Task<Order> CancelOrder(User user)
