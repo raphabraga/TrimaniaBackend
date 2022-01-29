@@ -126,8 +126,6 @@ namespace Backend.Services
         public async Task<ChartItem> RemoveFromChart(User user, int id)
         {
             Order order = await GetOpenOrder(user);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.RemoveItemFromEmptyChart));
             ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
@@ -146,9 +144,7 @@ namespace Backend.Services
         public async Task<ChartItem> ChangeItemQuantity(User user, int id, string sign)
         {
             Order order = await GetOpenOrder(user);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemFromEmptyChart));
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
+            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
             if (item == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInChart));
             else
@@ -180,8 +176,6 @@ namespace Backend.Services
         public async Task<Order> CancelOrder(User user)
         {
             Order order = await GetOpenOrder(user);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CancelEmptyChart));
             order.Status = OrderStatus.Cancelled;
             order.CancellationDate = DateTime.Now;
             order.Items.ForEach(async item =>
@@ -195,8 +189,6 @@ namespace Backend.Services
         public async Task<Order> CheckoutOrder(User user, PaymentRequest payment)
         {
             Order order = await GetOpenOrder(user);
-            if (order == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.CheckoutEmptyChart));
             order.Status = OrderStatus.InProgress;
             await _unitOfWork.Commit();
             await ProcessPurchase(order, payment);
@@ -209,19 +201,17 @@ namespace Backend.Services
             switch (payment.PaymentMethod)
             {
                 case PaymentMethod.InCash:
-                    processingTime = 0; // instant processing
+                    processingTime = 0;
                     break;
                 case PaymentMethod.CreditCard:
-                    processingTime = 1 * 1000 * 30; // 30s processing
+                    processingTime = 0;
                     break;
                 case PaymentMethod.BankSlip:
-                    processingTime = 1 * 1000 * 60; // 1min processing
+                    processingTime = 0;
                     break;
             }
             await Task.Delay(processingTime).ContinueWith(_ =>
             {
-                // TODO: Fix this part (disposing before persisting data in DB)
-                using var unitOfWork = _unitOfWork;
                 order.Status = OrderStatus.Finished;
                 order.FinishingDate = DateTime.Now;
                 _unitOfWork.OrderRepository.Update(order);
