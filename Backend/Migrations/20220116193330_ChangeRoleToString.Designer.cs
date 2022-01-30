@@ -49,7 +49,7 @@ namespace Backend.Migrations
                     b.ToTable("Addresses");
                 });
 
-            modelBuilder.Entity("Backend.Models.ChartItem", b =>
+            modelBuilder.Entity("Backend.Models.CartItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -186,7 +186,7 @@ namespace Backend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Backend.Models.ChartItem", b =>
+            modelBuilder.Entity("Backend.Models.CartItem", b =>
                 {
                     b.HasOne("Backend.Models.Order", null)
                         .WithMany("Items")

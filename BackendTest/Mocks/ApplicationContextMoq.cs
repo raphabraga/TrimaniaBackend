@@ -9,7 +9,7 @@ namespace BackendTest.Mocks
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<ChartItem> Items { get; set; }
+        public DbSet<CartItem> Items { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -52,7 +52,7 @@ namespace BackendTest.Mocks
                 entity.Property(e => e.StockQuantity).IsRequired();
             });
 
-            modelBuilder.Entity<ChartItem>(entity =>
+            modelBuilder.Entity<CartItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Price).IsRequired();

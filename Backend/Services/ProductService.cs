@@ -86,7 +86,7 @@ namespace Backend.Services
         public async Task DeleteProduct(int id)
         {
             Product product = await GetProductById(id);
-            if (await _unitOfWork.ChartItemRepository.GetBy(item => item.Product.Id == id) != null)
+            if (await _unitOfWork.CartItemRepository.GetBy(item => item.Product.Id == id) != null)
                 throw new NotAllowedDeletionException(ErrorUtils.GetMessage(ErrorType.DeleteProductInRegisteredOrder));
             _unitOfWork.ProductRepository.Delete(id);
             await _unitOfWork.Commit();

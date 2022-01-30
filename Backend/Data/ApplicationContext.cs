@@ -10,7 +10,7 @@ namespace Backend.Data
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<ChartItem> Items { get; set; }
+        public DbSet<CartItem> Items { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,7 @@ namespace Backend.Data
                 entity.Property(e => e.StockQuantity).IsRequired();
             });
 
-            modelBuilder.Entity<ChartItem>(entity =>
+            modelBuilder.Entity<CartItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Price).IsRequired();

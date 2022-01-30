@@ -7,7 +7,7 @@ namespace Backend.Migrations.Seeding.Interfaces
         public Address GenerateAddress();
         public User GenerateUser();
         public Product GenerateProduct();
-        public ChartItem GenerateChartItem(int id);
+        public CartItem GenerateCartItem(int id);
         public Order GenerateOrder();
 
     }

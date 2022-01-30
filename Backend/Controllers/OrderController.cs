@@ -65,11 +65,11 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddToChart([FromBody] AddToChartRequest request)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(await _orderService.AddToChart(user, request)));
+            return Ok(new ViewItem(await _orderService.AddToCart(user, request)));
         }
 
         [HttpPut]
@@ -91,11 +91,11 @@ namespace Backend.Controllers
         }
 
         [HttpPut("remove-item/{id}")]
-        public async Task<IActionResult> RemoveFromChart(int id)
+        public async Task<IActionResult> RemoveFromCart(int id)
         {
             string login = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
             User user = await _userService.GetUserByLogin(login);
-            return Ok(new ViewItem(await _orderService.RemoveFromChart(user, id)));
+            return Ok(new ViewItem(await _orderService.RemoveFromCart(user, id)));
         }
 
         [Route("increase-item/{id}")]

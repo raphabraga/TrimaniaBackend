@@ -83,13 +83,13 @@ namespace Backend.Services
                 Client = user,
                 Status = OrderStatus.Open,
                 CreationDate = DateTime.Now,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
             _unitOfWork.OrderRepository.Insert(order);
             await _unitOfWork.Commit();
             return order;
         }
-        public async Task<ChartItem> AddToChart(User user, AddToChartRequest request)
+        public async Task<CartItem> AddToCart(User user, AddToCartRequest request)
         {
             var product = await _productService.GetProductById(request.ProductId.Value);
             Order order = new Order();
@@ -105,10 +105,10 @@ namespace Backend.Services
                 order = await CreateOrder(user);
             product = await _productService.UpdateProductQuantity(request.ProductId.Value, request.Quantity.Value);
             order.TotalValue += product.Price.Value * request.Quantity.Value;
-            ChartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == request.ProductId.Value);
+            CartItem item = order.Items.FirstOrDefault(item => item?.Product?.Id == request.ProductId.Value);
             if (item == null)
             {
-                item = new ChartItem
+                item = new CartItem
                 {
                     Product = product,
                     Price = product.Price.Value,
@@ -123,10 +123,10 @@ namespace Backend.Services
             return item;
         }
 
-        public async Task<ChartItem> RemoveFromChart(User user, int id)
+        public async Task<CartItem> RemoveFromCart(User user, int id)
         {
             Order order = await GetOpenOrder(user);
-            ChartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
+            CartItem item = order.Items.FirstOrDefault(item => item.Product.Id == id);
             if (item == null)
                 throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ProductIdNotFound));
             else
@@ -141,12 +141,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<ChartItem> ChangeItemQuantity(User user, int id, string sign)
+        public async Task<CartItem> ChangeItemQuantity(User user, int id, string sign)
         {
             Order order = await GetOpenOrder(user);
-            ChartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
+            CartItem item = order.Items.FirstOrDefault(item => item.ProductId == id);
             if (item == null)
-                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInChart));
+                throw new RegisterNotFoundException(ErrorUtils.GetMessage(ErrorType.ChangeItemNotInCart));
             else
             {
                 if (sign == "Increase")
@@ -159,7 +159,7 @@ namespace Backend.Services
                 {
                     if (item.Quantity == 1)
                     {
-                        await RemoveFromChart(user, id);
+                        await RemoveFromCart(user, id);
                         item.Quantity--;
                     }
                     else

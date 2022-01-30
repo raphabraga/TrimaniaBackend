@@ -65,12 +65,12 @@ namespace BackendTest.Mocks
             };
         }
 
-        public ChartItem GenerateChartItem(int id)
+        public CartItem GenerateCartItem(int id)
         {
             var rand = new Random();
             var productId = rand.Next(1, _context.Products.AsNoTracking().Count() + 1);
             var clientId = rand.Next(2, _context.Users.AsNoTracking().Count() + 1);
-            return new ChartItem
+            return new CartItem
             {
                 Id = id,
                 ProductId = productId,
@@ -88,11 +88,11 @@ namespace BackendTest.Mocks
             creationDate.AddDays(rand.Next(0, 7)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60)) : null;
             DateTime? finishingDate = status == OrderStatus.Finished ?
             creationDate.AddDays(rand.Next(0, 7)).AddHours(rand.Next(1, 24)).AddMinutes(rand.Next(1, 60)) : null;
-            var items = new List<ChartItem>();
+            var items = new List<CartItem>();
             int itemId = _context.Items.Count() + 1;
             for (int i = 0; i < rand.Next(1, 6); i++)
             {
-                var item = GenerateChartItem(itemId + i);
+                var item = GenerateCartItem(itemId + i);
                 items.Add(item);
             }
             decimal totalValue = items.Sum(item => item.Price * item.Quantity);

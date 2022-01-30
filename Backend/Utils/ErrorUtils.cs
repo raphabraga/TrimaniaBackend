@@ -10,17 +10,17 @@ namespace Backend.Utils
             {
                 case ErrorType.ProductIdNotFound:
                     return "Product not registered on the database with this ID.";
-                case ErrorType.RemoveItemFromEmptyChart:
+                case ErrorType.RemoveItemFromEmptyCart:
                     return "There is no items in the chart in order to remove from it.";
-                case ErrorType.ChangeItemFromEmptyChart:
+                case ErrorType.ChangeItemFromEmptyCart:
                     return "There is no items in the chart in order to change its quantity.";
-                case ErrorType.RemoveItemNotInChart:
+                case ErrorType.RemoveItemNotInCart:
                     return "This item doesn't exist in the chart. Unable to remove it.";
-                case ErrorType.ChangeItemNotInChart:
+                case ErrorType.ChangeItemNotInCart:
                     return "This item doesn't exist in the chart. Unable to change quantity.";
-                case ErrorType.CancelEmptyChart:
+                case ErrorType.CancelEmptyCart:
                     return "There is no open order to be cancelled.";
-                case ErrorType.CheckoutEmptyChart:
+                case ErrorType.CheckoutEmptyCart:
                     return "The chart is empty. Unable to checkout.";
                 case ErrorType.UniqueProductName:
                     return "Product already registered on the database with this name.";
