@@ -10,7 +10,7 @@ namespace Backend.Interfaces.Repositories
         IRepository<Product> ProductRepository { get; }
         IRepository<Order> OrderRepository { get; }
         IRepository<Address> AddressRepository { get; }
-        IRepository<ChartItem> ChartItemRepository { get; }
+        IRepository<CartItem> CartItemRepository { get; }
         public Task Commit();
 
     }

@@ -262,7 +262,7 @@ namespace BackendTest.Services
         [InlineData(10)]
         [InlineData(50)]
         [InlineData(100)]
-        public async Task DeleteProduct_WhenProductIsInAnChartItem_ThrowsNotAllowedDeletionException(int itemId)
+        public async Task DeleteProduct_WhenProductIsInAnCartItem_ThrowsNotAllowedDeletionException(int itemId)
         {
             // Given
             var productId = _fixture.Context.Items.Find(itemId).ProductId;

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Dtos
 {
-    public class AddToChartRequest
+    public class AddToCartRequest
     {
         [Required]
         public int? ProductId { get; set; }

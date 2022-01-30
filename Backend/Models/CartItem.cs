@@ -1,8 +1,8 @@
 namespace Backend.Models
 {
-    public class ChartItem
+    public class CartItem
     {
-        public ChartItem() { }
+        public CartItem() { }
         public int Id { get; set; }
         public Product Product { get; set; }
         public int? ProductId { get; set; }

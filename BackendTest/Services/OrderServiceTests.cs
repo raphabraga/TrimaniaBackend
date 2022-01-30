@@ -186,10 +186,10 @@ namespace BackendTest.Services
 
         [Theory]
         [InlineData(46, 30)]
-        public async Task AddToChart_WithUserHavingAnOpenOrder_AddItemToChartInTheOpenOrder(int userId, int productId)
+        public async Task AddToCart_WithUserHavingAnOpenOrder_AddItemToCartInTheOpenOrder(int userId, int productId)
         {
             // Given
-            var addToChartRequest = new AddToChartRequest()
+            var addToCartRequest = new AddToCartRequest()
             {
                 ProductId = productId,
                 Quantity = _fixture.Context.Products.Find(productId).StockQuantity - 1,
@@ -207,17 +207,17 @@ namespace BackendTest.Services
             _fixture.Context.SaveChanges();
 
             // When
-            var item = await _fixture.OrderService.AddToChart(user, addToChartRequest);
+            var item = await _fixture.OrderService.AddToCart(user, addToCartRequest);
             // Then
             Assert.True(_fixture.Context.Orders.Find(order.Id).Items.Contains(item));
         }
 
         [Theory]
         [InlineData(18, 60)]
-        public async Task AddToChart_WithUserNotHavingOpenOrder_CreatesAnOrderAndAddItemToIt(int userId, int productId)
+        public async Task AddToCart_WithUserNotHavingOpenOrder_CreatesAnOrderAndAddItemToIt(int userId, int productId)
         {
             // Given
-            var addToChartRequest = new AddToChartRequest()
+            var addToCartRequest = new AddToCartRequest()
             {
                 ProductId = productId,
                 Quantity = _fixture.Context.Products.Find(productId).StockQuantity - 1,
@@ -225,18 +225,18 @@ namespace BackendTest.Services
 
             var user = _fixture.Context.Users.Find(userId);
             // When
-            var item = await _fixture.OrderService.AddToChart(user, addToChartRequest);
+            var item = await _fixture.OrderService.AddToCart(user, addToCartRequest);
             // Then
             Assert.True(_fixture.Context.Orders.FirstOrDefault(order => order.Status == OrderStatus.Open && order.ClientId == user.Id).Items.Contains(item));
         }
 
         [Theory]
         [InlineData(6, 45, 3)]
-        public async Task AddToChart_WithUserHavingAnOpenOrderWithTheProductAlreadyInTheChart_IncreaseProductQuantityInTheOpenOrder(int userId, int productId, int itemQuantity)
+        public async Task AddToCart_WithUserHavingAnOpenOrderWithTheProductAlreadyInTheCart_IncreaseProductQuantityInTheOpenOrder(int userId, int productId, int itemQuantity)
         {
             // Given
             var product = _fixture.Context.Products.Find(productId);
-            var addToChartRequest = new AddToChartRequest()
+            var addToCartRequest = new AddToCartRequest()
             {
                 ProductId = productId,
                 Quantity = product.StockQuantity - 1,
@@ -248,9 +248,9 @@ namespace BackendTest.Services
                 Id = _fixture.Context.Orders.Count() + 1,
                 ClientId = user.Id,
                 Status = OrderStatus.Open,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var item = new ChartItem()
+            var item = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = productId,
@@ -262,14 +262,14 @@ namespace BackendTest.Services
             _fixture.Context.SaveChanges();
 
             // When
-            await _fixture.OrderService.AddToChart(user, addToChartRequest);
+            await _fixture.OrderService.AddToCart(user, addToCartRequest);
             // Then
-            Assert.True(_fixture.Context.Items.Find(item.Id).Quantity == itemQuantity + addToChartRequest.Quantity);
+            Assert.True(_fixture.Context.Items.Find(item.Id).Quantity == itemQuantity + addToCartRequest.Quantity);
         }
 
         [Theory]
         [InlineData(11, 75, 10)]
-        public async Task RemoveFromChart_WithOthersItemsInTheChart_RemoveItemFromChartAndLetOrderOpen(int userId, int productId, int itemQuantity)
+        public async Task RemoveFromCart_WithOthersItemsInTheCart_RemoveItemFromCartAndLetOrderOpen(int userId, int productId, int itemQuantity)
         {
             // Given
             var product = _fixture.Context.Products.Find(productId);
@@ -280,9 +280,9 @@ namespace BackendTest.Services
                 Id = _fixture.Context.Orders.Count() + 1,
                 ClientId = user.Id,
                 Status = OrderStatus.Open,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var firstItem = new ChartItem()
+            var firstItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = productId,
@@ -290,7 +290,7 @@ namespace BackendTest.Services
                 Quantity = itemQuantity,
             };
             order.Items.Add(firstItem);
-            var secondItem = new ChartItem()
+            var secondItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 2,
                 ProductId = productId + 1,
@@ -301,14 +301,14 @@ namespace BackendTest.Services
             _fixture.Context.Orders.Add(order);
             _fixture.Context.SaveChanges();
             // When
-            await _fixture.OrderService.RemoveFromChart(user, productId);
+            await _fixture.OrderService.RemoveFromCart(user, productId);
             // Then
             Assert.True(!_fixture.Context.Orders.Find(order.Id).Items.Contains(firstItem));
         }
 
         [Theory]
         [InlineData(29, 75, 10)]
-        public async Task RemoveFromChart_WithoutItemsInTheChart_RemoveOrderFromDb(int userId, int productId, int itemQuantity)
+        public async Task RemoveFromCart_WithoutItemsInTheCart_RemoveOrderFromDb(int userId, int productId, int itemQuantity)
         {
             // Given
             var product = _fixture.Context.Products.Find(productId);
@@ -320,9 +320,9 @@ namespace BackendTest.Services
                 Id = _fixture.Context.Orders.Count() + 1,
                 ClientId = user.Id,
                 Status = OrderStatus.Open,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var item = new ChartItem()
+            var item = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = productId,
@@ -333,14 +333,14 @@ namespace BackendTest.Services
             _fixture.Context.Orders.Add(order);
             _fixture.Context.SaveChanges();
             // When
-            await _fixture.OrderService.RemoveFromChart(user, productId);
+            await _fixture.OrderService.RemoveFromCart(user, productId);
             // Then
             Assert.True(_fixture.Context.Orders.Find(order.Id) == null);
         }
 
         [Theory]
         [InlineData(9)]
-        public async Task RemoveFromChart_PassingNonExistingChartItemId_ThrowsRegisterNotFoundException(int userId)
+        public async Task RemoveFromCart_PassingNonExistingCartItemId_ThrowsRegisterNotFoundException(int userId)
         {
             // Given
             var user = _fixture.Context.Users.Find(userId);
@@ -353,7 +353,7 @@ namespace BackendTest.Services
             _fixture.Context.Orders.Add(order);
             _fixture.Context.SaveChanges();
             // When
-            var act = async () => await _fixture.OrderService.RemoveFromChart(user, _fixture.Context.Products.Count() + 1);
+            var act = async () => await _fixture.OrderService.RemoveFromCart(user, _fixture.Context.Products.Count() + 1);
             // Then
             await Assert.ThrowsAsync<RegisterNotFoundException>(act);
         }
@@ -361,7 +361,7 @@ namespace BackendTest.Services
         [Theory]
         [InlineData(19, "Increase", 55, 5)]
         [InlineData(41, "Decrease", 65, 3)]
-        public async Task ChangeItemQuantity_WithSign_UpdateChartItemAccordingly(int userId, string sign, int productId, int itemQuantity)
+        public async Task ChangeItemQuantity_WithSign_UpdateCartItemAccordingly(int userId, string sign, int productId, int itemQuantity)
         {
             // Given
             var product = _fixture.Context.Products.Find(productId);
@@ -374,9 +374,9 @@ namespace BackendTest.Services
                 ClientId = user.Id,
                 Status = OrderStatus.Open,
                 TotalValue = itemQuantity * product.Price.Value,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var item = new ChartItem()
+            var item = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = productId,
@@ -428,7 +428,7 @@ namespace BackendTest.Services
 
         [Theory]
         [InlineData(3, 40, 85)]
-        public async Task ChangeItemQuantity_WithDecreaseSignAndOneItemInTheChart_RemoveItemFromChart(int userId, int firstProductId, int secondProductId)
+        public async Task ChangeItemQuantity_WithDecreaseSignAndOneItemInTheCart_RemoveItemFromCart(int userId, int firstProductId, int secondProductId)
         {
             // Given
             var firstProduct = _fixture.Context.Products.Find(firstProductId);
@@ -441,9 +441,9 @@ namespace BackendTest.Services
                 Id = _fixture.Context.Orders.Count() + 1,
                 ClientId = user.Id,
                 Status = OrderStatus.Open,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var firstItem = new ChartItem()
+            var firstItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = firstProductId,
@@ -451,7 +451,7 @@ namespace BackendTest.Services
                 Quantity = 1,
             };
             order.Items.Add(firstItem);
-            var secondItem = new ChartItem()
+            var secondItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 2,
                 ProductId = secondProductId,
@@ -485,9 +485,9 @@ namespace BackendTest.Services
                 ClientId = userId,
                 Status = OrderStatus.Open,
                 CreationDate = DateTime.Now,
-                Items = new List<ChartItem>()
+                Items = new List<CartItem>()
             };
-            var firstItem = new ChartItem()
+            var firstItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 1,
                 ProductId = firstProductId,
@@ -495,7 +495,7 @@ namespace BackendTest.Services
                 Quantity = firstItemQuantity,
             };
             order.Items.Add(firstItem);
-            var secondItem = new ChartItem()
+            var secondItem = new CartItem()
             {
                 Id = _fixture.Context.Items.Count() + 2,
                 ProductId = secondProductId,

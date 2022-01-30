@@ -3,12 +3,12 @@ namespace Backend.Models.Enums
     public enum ErrorType
     {
         ProductIdNotFound,
-        RemoveItemFromEmptyChart,
-        ChangeItemFromEmptyChart,
-        RemoveItemNotInChart,
-        ChangeItemNotInChart,
-        CancelEmptyChart,
-        CheckoutEmptyChart,
+        RemoveItemFromEmptyCart,
+        ChangeItemFromEmptyCart,
+        RemoveItemNotInCart,
+        ChangeItemNotInCart,
+        CancelEmptyCart,
+        CheckoutEmptyCart,
         UniqueProductName,
         InsufficientProductInStock,
         DeleteProductInRegisteredOrder,

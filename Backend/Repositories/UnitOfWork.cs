@@ -13,7 +13,7 @@ namespace Backend.Repositories
         private Repository<Product> _productRepository = null;
         private Repository<Order> _orderRepository = null;
         private Repository<Address> _addressRepository = null;
-        private Repository<ChartItem> _chartItemRepository = null;
+        private Repository<CartItem> _chartItemRepository = null;
 
         public IRepository<User> UserRepository
         {
@@ -55,12 +55,12 @@ namespace Backend.Repositories
             }
         }
 
-        public IRepository<ChartItem> ChartItemRepository
+        public IRepository<CartItem> CartItemRepository
         {
             get
             {
                 if (_chartItemRepository == null)
-                    _chartItemRepository = new Repository<ChartItem>(_applicationContext);
+                    _chartItemRepository = new Repository<CartItem>(_applicationContext);
                 return _chartItemRepository;
             }
         }

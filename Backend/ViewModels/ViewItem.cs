@@ -8,7 +8,7 @@ namespace Backend.ViewModels
         public string ProductName { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
-        public ViewItem(ChartItem item)
+        public ViewItem(CartItem item)
         {
             ProductId = item.Product.Id;
             ProductName = item.Product.Name;
