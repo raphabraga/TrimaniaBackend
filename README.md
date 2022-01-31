@@ -2,7 +2,7 @@
 
 # Trimania Backend 🟣🛒
 
-## API built for the frontend of Trimania E-commerce store website.
+## API built for the Trimania E-commerce store website.
 
 ![license](https://img.shields.io/github/license/raphabraga/TrimaniaBackend)
 ![open issues](https://img.shields.io/github/issues/raphabraga/TrimaniaBackend?color=brightgreen)
@@ -34,7 +34,7 @@
 ### Project Status
 
     🚧  Trimania Backend project is still under development with few open issues, however its core features were tested and are working great.  🚧
-    
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ---
@@ -55,8 +55,9 @@
 
 - Before you are able to run the API, you should have [Git](https://git-scm.com),
   [Docker Engine](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
-  installed in any machine which gives support to those tools. Besides that, the docker service must be started.
-  
+  installed in any machine which gives support to those tools.
+- Start the docker service.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ---
@@ -100,11 +101,11 @@ The API follows REST architecture and it has the following endpoints:
 - [x] /api/v1/orders/
 - [x] /api/v1/orders-summary/
 
-For further details about each endpoints, you can access the swagger documentation at localhost/swagger/index.html.
+For further details about each endpoints, you can access the swagger documentation at `localhost/swagger/index`.html.
 
-For testing purposes, the MySQL database which serves the backend, it is populated with information like admin user, customer users and products.
+For testing purposes, the MySQL database which serves the backend, it is populated with information, e.g. admin user, customer users and products.
 
-The admin (login: admin, password: #tr1l0g0) has elevated privileges in the API, it is allowed to perform operations e.g. delete user, register new product, get all users order report, etc. 
+The admin user (login: `admin`, password: `#tr1l0g0`) has elevated privileges in the API, it is allowed to perform operations e.g. delete user, register new product, get all users order report, etc.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -138,7 +139,7 @@ The following tools were used to build the project:
 
 Spiral out. Keep going!
 
-Let's talk!
+`Let's talk!`
 
 [![Linkedin Badge](https://img.shields.io/badge/-Raphael-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/raphael-braga-ev/)](https://www.linkedin.com/in/raphael-braga-ev/)
 [![Gmail Badge](https://img.shields.io/badge/-raphaelbraga.br@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=mailto:raphaelbraga.br@gmail.com)](mailto:raphaelbraga.br@gmail.com)
@@ -149,6 +150,6 @@ Let's talk!
 
 ### License
 
-Distributed under the MIT License. See LICENSE.txt for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
