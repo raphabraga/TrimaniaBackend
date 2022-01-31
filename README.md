@@ -94,7 +94,7 @@ $ docker-compose up -d
 
 #### Version 1.0
 
-The API follows REST architecture and it has the following endpoints:
+The API follows `REST architecture` and it has the following endpoints:
 
 - [x] /api/v1/login/
 - [x] /api/v1/users/
@@ -102,11 +102,13 @@ The API follows REST architecture and it has the following endpoints:
 - [x] /api/v1/orders/
 - [x] /api/v1/orders-summary/
 
-For further details about each endpoints, you can access the swagger documentation at `localhost/swagger/index`.html.
+For further details about each endpoints, you can access the swagger documentation at `/swagger/index.html`.
 
-For testing purposes, the MySQL database which serves the backend, it is populated with information, e.g. admin user, customer users and products.
+For testing purposes, the `MySQL database` which serves the backend, it is populated with information, e.g., admin users, customers, and products.
 
-The admin user (login: `admin`, password: `#tr1l0g0`) has elevated privileges in the API, it is allowed to perform operations e.g. delete user, register new product, get all users order report, etc.
+The admin user (login: `admin`, password: `#tr1l0g0`) has elevated privileges in the API, it is allowed to perform operations like delete user, register product, generate users sales report, etc.
+
+For operations that require authentication/authorization, it is necessary to pass a `bearer token` in the authentication header. The authentication token is obtained in the `/api/v1/login/` endpoint.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
