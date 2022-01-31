@@ -1,4 +1,4 @@
 FROM ubuntu/mysql
-WORKDIR /Db
+WORKDIR /Database
 COPY * ./
 EXPOSE 3306
