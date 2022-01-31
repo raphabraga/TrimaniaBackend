@@ -20,7 +20,7 @@
   <ol>
     <li><a href="#project-status">Project Status</a></li>
     <li><a href="#features">Features</a></li>
-    <li><a href="#prerequisites">Prerequistes</a></li>
+    <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#running-the-api">Running the API</a></li>
     <li><a href="#api-usage">API usage</a></li>
     <li><a href="#technologies">Technologies</a></li>
