@@ -4,11 +4,11 @@
 
 ## API built for the Trimania E-commerce store website.
 
-![license](https://img.shields.io/github/license/raphabraga/TrimaniaBackend)
+![license](https://img.shields.io/github/license/raphabraga/TrimaniaBackend?color=red)
 ![open issues](https://img.shields.io/github/issues/raphabraga/TrimaniaBackend?color=brightgreen)
 ![closed issues](https://img.shields.io/github/issues-closed/raphabraga/TrimaniaBackend)
 ![repo size](https://img.shields.io/github/repo-size/raphabraga/TrimaniaBackend)
-![total lines](https://img.shields.io/tokei/lines/github/raphabraga/TrimaniaBackend)
+![total lines](https://img.shields.io/tokei/lines/github/raphabraga/TrimaniaBackend?color=purple)
 
 </div>
 
@@ -53,9 +53,10 @@
 
 ### Prerequisites
 
-- Before you are able to run the API, you should have [Git](https://git-scm.com),
-  [Docker Engine](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
-  installed in any machine which gives support to those tools.
+Before you are able to run the API, you `must`:
+- Install [Git](https://git-scm.com);
+- Install [Docker Engine](https://docs.docker.com/engine/install/);
+- Install [Docker Compose](https://docs.docker.com/compose/install/);
 - Start the docker service.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -75,11 +76,11 @@ $ cd TrimaniaBackend/
 
 # Build the docker containers
 
-$ docker-compose -f docker-compose.prod.yml build
+$ docker-compose build
 
 # Run the docker containers
 
-$ docker-compose -f docker-compose.prod.yml up -d
+$ docker-compose up -d
 
 # The backend will run in a docker container listening to TCP port 80 (accessed at <http://localhost/api/v1>).
 # There is also a MySQL database running in another container which listen to TCP port 3306.
@@ -137,9 +138,9 @@ The following tools were used to build the project:
  <sub><b>Raphael Braga Evangelista</b></sub>
 </a>
 
-Spiral out. Keep going!
+`Spiral out. Keep going!`
 
-`Let's talk!`
+Let's talk!
 
 [![Linkedin Badge](https://img.shields.io/badge/-Raphael-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/raphael-braga-ev/)](https://www.linkedin.com/in/raphael-braga-ev/)
 [![Gmail Badge](https://img.shields.io/badge/-raphaelbraga.br@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=mailto:raphaelbraga.br@gmail.com)](mailto:raphaelbraga.br@gmail.com)
@@ -150,6 +151,6 @@ Spiral out. Keep going!
 
 ### License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` file for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
