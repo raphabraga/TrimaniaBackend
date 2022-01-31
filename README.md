@@ -149,6 +149,6 @@ Let's talk!
 
 ### License
 
-Distributed under the MIT License. See ![license](https://img.shields.io/github/license/raphabraga/TrimaniaBackend) for more information.
+Distributed under the MIT License. See LICENSE.txt for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
