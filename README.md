@@ -2,7 +2,8 @@
 
 # Trimania Backend 🟣🛒
 
-## API built for the Trimania E-commerce store website.
+## API built for the Trimania's E-commerce store website.
+This was developed as a practical test for Trilogo Development Program's Backend Challenge for creating an API for a fictional E-commerce website. For further details about the challenge's description, requisites, etc, please go to [TDP Backend C# Challenge](https://github.com/joaobatist4/trilogo-desafio-backend).
 
 ![license](https://img.shields.io/github/license/raphabraga/TrimaniaBackend?color=red)
 ![open issues](https://img.shields.io/github/issues/raphabraga/TrimaniaBackend?color=brightgreen)
