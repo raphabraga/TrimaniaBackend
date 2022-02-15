@@ -70,6 +70,7 @@ namespace Backend.Repositories
             _applicationContext = context;
         }
 
+        //TODO: Nome de métodos async devem terminar com o sufixo Async
         public async Task Commit()
         {
             await _applicationContext.SaveChangesAsync();

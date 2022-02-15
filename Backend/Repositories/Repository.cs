@@ -47,6 +47,7 @@ namespace Backend.Repositories
                 return await query.ToListAsync();
         }
 
+        //TODO: Esse include properties pode ser feito de outra maneira
         public async Task<T> GetBy(Expression<Func<T, bool>> predicate, string includeProperties = "")
         {
             IQueryable<T> query = _dbSet;
@@ -63,11 +64,14 @@ namespace Backend.Repositories
             _dbSet.Add(entity);
         }
 
+        //TODO: Qual a motivação de usar attach ao fazer update no objeto. O próprio EF não faz isso ?
         public void Update(T entityToUpdate)
         {
             _dbSet.Attach(entityToUpdate);
             _applicationContext.Entry(entityToUpdate).State = EntityState.Modified;
         }
+
+        //TODO: Qual a motivação de usar attach e detach ao excluir o objeto ?
         public void Delete(int id)
         {
             T entityToDelete = _dbSet.Find(id);
